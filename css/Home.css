@@ -1,0 +1,80 @@
+.container{
+    display:flex;
+    height: 88vh;
+    justify-content: center;
+    align-items: center;
+  }
+  .card-container{
+  perspective: 1000px;
+  justify-content: center; 
+  display:flex;
+  align-items: center;
+  }
+  
+  .Auditor{
+     width:50%;
+     padding:20px;
+  }
+
+  .FormName{
+    text-align:center;
+    font-size: 24px !important;
+    margin-bottom: 20px !important;
+  }
+  .card {
+    width: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    transition: transform 0.5s;
+    display: block;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    margin: 0 auto;
+    background-color: rgba(255, 255, 255, 0);
+  }
+
+  .card:hover{
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    background-color:rgba(255, 255, 255, 0.7);
+  }
+
+  .registration-card {
+    transform: rotateY(0deg);
+    display: none;
+  }
+
+  .flipped .login-card {
+    transform: rotateY(180deg);
+    display: none;
+  }
+
+  .flipped .registration-card {
+    transform: rotateY(0);
+    display: block;
+  }
+
+  .unflipped .login-card {
+    transform: rotateY(0);
+    display: block;
+  }
+
+  .unflipped .registration-card {
+    transform: rotateY(180deg);
+    display: none;
+  }
+
+  .form-label {
+    margin-bottom: 0.5rem;
+  }
+
+  .mb-3 {
+    margin-bottom: 1rem;
+  }
+  .input-icon{
+    position: absolute;
+    top: 50%; 
+    left: 15px;
+    transform: translateY(-50%);
+    color: #555;
+  }
