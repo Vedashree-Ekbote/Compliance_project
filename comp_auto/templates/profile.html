@@ -1,0 +1,15 @@
+<!-- profile.html -->
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="profile-content">
+    <!-- Add your profile content here -->
+    <h3>Welcome to your profile</h3>
+    <br>
+     <p>Username: {{ auditor.username }} </p>
+     <p>Email: {{ auditor.email}} </p>
+     <p>Click here to visit your previous reports : <a href='/myreport'>my reports</a></p>
+    </br>
+</div>
+{% endblock %}

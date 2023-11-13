@@ -1,0 +1,115 @@
+<!-- genreport.html -->
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="genreport-content">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Upload the Circulars</h5>
+            <form method="post" enctype="multipart/form-data"action="{% url 'audit_questions' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <label for="file-0-MAX_NUM_FORMS">Number of Circulars:</label>
+                <input type="number" name="file-0-MAX_NUM_FORMS" value="1" min="1" required>
+                <br>
+                <div id="fileInputs">
+                   {% comment %} dynamic input fields will be there {% endcomment %}
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Upload</button>
+                <button type="submit" class="btn btn-primary">Generate</button>
+            </form>
+        </div>
+    </div>
+    
+</div>
+</div>
+
+<style>
+    .card{
+        margin: 20px;
+        background-color: white;
+        border: 1px solid black;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      
+      .card-body {
+        padding: 20px;
+      }
+      
+      form {
+        margin: 0;
+        padding: 0;
+      }
+      
+      form label{
+        font-weight: bold;
+      }
+      
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      
+      button:hover {
+        background-color: #0056b3;
+      }
+      
+      
+      /* Style for the "Generate" button */
+      .card .btn-primary {
+        margin-top: 10px;
+      }
+      
+      /* Style for the "Upload" button within the form */
+      form .btn-primary {
+        margin-top: 20px;
+      }
+      
+      /* Add spacing between file input fields */
+      #fileInputs input[type="file"] {
+        margin-bottom: 10px;
+      }
+</style>
+
+<script>
+    document.querySelector('[name="file-0-MAX_NUM_FORMS"]').addEventListener('input', function () {
+        console.log('Input changed');
+        const fileCount = parseInt(this.value);
+        const fileInputs = document.getElementById('fileInputs');
+        fileInputs.innerHTML = ''; // Clear previous input fields
+
+        for (let i = 0; i < fileCount; i++) {
+            const inputField = document.createElement('input');
+            inputField.type = 'file';
+            inputField.name = `file-${i}`;
+            inputField.required = true;
+            inputField.setAttribute('multiple', ''); 
+            fileInputs.appendChild(inputField);
+        }
+    });
+</script>
+{% endblock %}

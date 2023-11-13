@@ -1,0 +1,119 @@
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<link rel="stylesheet" href="{% static 'css/auditques.css' %}">
+<div class="Audit-points">
+    <div class="card">
+        <div class="card-body">
+            <form method="post" id="auditForm">
+                {% csrf_token %}
+
+                <div class="point">
+                    <div class="title">
+                        <p>Point <span id="pointNumber">1</span> - Title</p>
+                    </div>
+                    <div class="summary">
+                        <p>Summary of Point <span id="summarypointNumber">1</span></p>
+                    </div>
+                    <div class="status">
+                        <label>
+                            <input type="radio" class="compliance_type" name="compliance_type" value="compliant"> Compliant
+                        </label>
+                        <label>
+                            <input type="radio" class="compliance_type" name="compliance_type" value="partially-compliant"> Partially Compliant
+                        </label>
+                        <label>
+                            <input type="radio" class="compliance_type" name="compliance_type" value="non-compliant"> Non-Compliant
+                        </label>
+                    </div>
+                    
+                    <div class="audit_observation">
+                        <textarea name="auditobservation" id="auditobservation" placeholder="Audit Observations" style="width: 100%;"></textarea>
+                    </div>
+                    <div class="recommandations">
+                        <textarea name="recommandation" id="recommandation" placeholder="What are your recommendations" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="buttons">
+                    <button type="button" class="btn" id="prevButton">Previous</button>
+                    <button type="submit" class="btn" id="submitButton">Submit</button>
+                    <button type="button" class="btn" id="nextButton">Next</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+       const form = document.getElementById("auditForm");
+       const pointNumber = document.getElementById("pointNumber");
+       const summarypointNumber=document.getElementById("summarypointNumber");
+       const nextButton = document.getElementById("nextButton");
+       const prevButton = document.getElementById("prevButton");
+       const submitButton = document.getElementById("submitButton");
+       let currentPoint = 1;
+       let totalPoints = 0; 
+       let isFormSubmitted = false;
+    
+       function showPoint() {
+        if (currentPoint === 1) {
+            prevButton.style.display = "none";
+        } else {
+            prevButton.style.display = "block";
+        }
+    
+        pointNumber.textContent = currentPoint;
+        summarypointNumber.textContent=currentPoint;
+    }
+    
+    nextButton.addEventListener("click", () => {
+        if (!isFormSubmitted) {
+            currentPoint++;
+            showPoint();
+        }
+    });
+    
+    prevButton.addEventListener("click", () => {
+        if (!isFormSubmitted && currentPoint > 1) {
+            currentPoint--;
+            showPoint();
+        }
+    });
+    
+    submitButton.addEventListener("click", () => {
+        if (!isFormSubmitted) {
+            totalPoints = currentPoint;
+            showPoint();
+            alert("Form submitted!");
+            isFormSubmitted = true;
+        }
+    });
+
+    const complaintstatuscolor = document.querySelector('input[name="compliance_type"][value="compliant"]');
+    const partialcomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="partially-compliant"]');
+    const nocomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="non-compliant"]');
+    complaintstatuscolor.addEventListener("change",()=>{
+        if(complaintstatuscolor.checked){
+            document.querySelector(".status").style.backgroundColor = "green";
+            
+        }
+    });
+    partialcomplaintstatuscolor.addEventListener("change",()=>{
+        if(partialcomplaintstatuscolor.checked){
+            document.querySelector(".status").style.backgroundColor = "#FFC200";
+        
+        }
+    });
+    nocomplaintstatuscolor.addEventListener("change",()=>{
+        if(nocomplaintstatuscolor.checked){
+            document.querySelector(".status").style.backgroundColor = "red";
+            
+        }
+    });
+    </script>
+    
+{% endblock %}

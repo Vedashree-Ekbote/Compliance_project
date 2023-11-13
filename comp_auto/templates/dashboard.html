@@ -1,0 +1,34 @@
+{% extends "Navbar.html" %}
+{% load static %}
+{% block body %}
+<link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<div class="container">
+  
+    <div class="col-3">
+      <!-- Vertical Navbar -->
+      <div class="vertical-navbar">
+        <ul>
+          {% comment %} <li><a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li> {% endcomment %}
+          <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i>Profile</a></li>
+          <li><a href="{% url 'genreport' %}"><i class="fas fa-file-alt"></i> Generate Report</a></li>
+          <li><a href="{% url 'myreport' %}"><i class="fas fa-file"></i></i> My reports</a></li>
+          <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="rightcontainer">
+    <div class="col-9">
+      <!-- Content Container -->
+      <div class="Auditor">
+        <!-- Add a block to display dynamic content -->
+        {% block dashboard_content %}
+        {% endblock %}
+      </div>
+    </div>
+  
+  </div>
+</div>
+
+{% endblock body %}

@@ -1,0 +1,85 @@
+{% extends "Navbar.html" %}
+{% block body %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/Home.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<div class="container">
+  
+      <div class="Auditor">
+        <div class="forms-container">
+        <div class="card-container"> <!-- Added a container around the card -->
+            <div class="card login-card"> <!-- Added login-card class -->
+                <div class="card-body">
+                    <form method='POST' action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <h4 class="FormName">Login Form</h4>
+                        <div class="mb-3"> 
+                            <i class="input-icon fas fa-user"></i> 
+                            <input  placeholder="Enter Username" type="text" class="form-control" id="loginUsername" name="loginUsername">
+                        </div>
+                        <div class="mb-3">
+                            <i class="input-icon fas fa-lock"></i>
+                            <input placeholder="Enter password" type="password" class="form-control" id="loginPassword" name="loginPassword">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    <p>Don't Have an Account? <a href="#" id="flip-to-register">Register</a></p>
+                </div>
+            </div>
+            <div class="card registration-card"> <!-- Added registration-card class -->
+                <div class="card-body">
+                    <form method="post" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        {{form.as_p}}
+                        <h4 class="FormName" id="RegistrationForm">Registration Form</h4>
+                        <div class="mb-3">
+                            <i class="input-icon fas fa-user"></i> 
+                            <input placeholder="Enter Username" type="text" class="form-control" id="registrationUsername"  name="registrationUsername">
+                        </div>
+                        {% comment %} <div class="mb-3">
+                            <label for="phoneno" class="form-label">Phone no</label>
+                            <input type="number" class="form-control" id="registrationPhoneNo" name="registrationPhoneNo">
+                        </div> {% endcomment %}
+                        <div class="mb-3">
+                            <i class="input-icon fas fa-envelope"></i>
+                            <input placeholder="Enter Email" type="email" class="form-control" id="registrationEmail" name="registrationEmail">
+                        </div>
+                        <div class="mb-3">
+                            <i class="input-icon fas fa-lock"></i>
+                            <input placeholder="Enter Password" type="password" class="form-control" id="registrationPassword" name="registrationPassword">
+                        </div>
+                        {% comment %} <div class="mb-3">
+                          <input placeholder="Confirm Password" type="password" class="form-control" id="ConfirmPassword" name="registrationPasswordConfirm">
+                      </div> {% endcomment %}
+                      </div>
+                    
+                        <button type="submit" class="btn btn-primary">Register</button>
+        
+                        <p>Already Have an Account? <a href="#" id="flip-to-login">Login</a></p>
+    
+                    </form>
+                </div>
+                
+        </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+  const fliptologincard = document.getElementById("flip-to-login");
+  const fliptoregistercard = document.getElementById("flip-to-register");
+  const cardContainer = document.querySelector(".card-container");
+
+  fliptoregistercard.addEventListener("click", () => {
+    cardContainer.classList.add("flipped");
+    cardContainer.classList.remove("unflipped");
+  });
+
+  fliptologincard.addEventListener("click", () => {
+    cardContainer.classList.remove("flipped");
+    cardContainer.classList.add("unflipped");
+  });
+</script>
+{% include 'footer.html' %}
+{% endblock body %}
