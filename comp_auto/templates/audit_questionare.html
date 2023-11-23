@@ -3,117 +3,128 @@
 
 {% block dashboard_content %}
 <link rel="stylesheet" href="{% static 'css/auditques.css' %}">
+
 <div class="Audit-points">
     <div class="card">
         <div class="card-body">
-            <form method="post" id="auditForm">
+            <form method="post" action="{% url 'responses' %}" id="auditForm">
                 {% csrf_token %}
-
+        
                 <div class="point">
-                    <div class="title">
-                        <p>Point <span id="pointNumber">1</span> - Title</p>
+                    <div class="title" id="auditNumber">
+                        <label for="title">Title</label>
+                        <span id="auditNumber">1</span>
                     </div>
-                    <div class="summary">
-                        <p>Summary of Point <span id="summarypointNumber">1</span></p>
+                    <div class="summary" id="summaryNumber">
+                        <label for="Summary">Summary</label>
+                        <span id="summaryNumber">1</span>
                     </div>
-                    <div class="status">
+                    <div class="status" id="Status">
+                        <label for="compliance_type">compliance type</label>
                         <label>
-                            <input type="radio" class="compliance_type" name="compliance_type" value="compliant"> Compliant
+                            <input type="radio" class="compliance_type" name="compliance_type" value="compliant">
+                            Compliant
                         </label>
                         <label>
-                            <input type="radio" class="compliance_type" name="compliance_type" value="partially-compliant"> Partially Compliant
+                            <input type="radio" class="compliance_type" name="compliance_type" value="partially-compliant">
+                            Partially Compliant
                         </label>
                         <label>
-                            <input type="radio" class="compliance_type" name="compliance_type" value="non-compliant"> Non-Compliant
+                            <input type="radio" class="compliance_type" name="compliance_type" value="non-compliant">
+                            Non-Compliant
                         </label>
                     </div>
-                    
-                    <div class="audit_observation">
-                        <textarea name="auditobservation" id="auditobservation" placeholder="Audit Observations" style="width: 100%;"></textarea>
+
+                    <div class="audit_observation" id="Observation">
+                        <label for="auditobservation">Audit Observations</label>
+                        <textarea name="audit_observations" id="auditobservation" placeholder="Audit Observations"
+                            style="width: 100%;"></textarea>
                     </div>
-                    <div class="recommandations">
-                        <textarea name="recommandation" id="recommandation" placeholder="What are your recommendations" style="width: 100%;"></textarea>
+                    <div class="recommandations" id="Recommandation">
+                        <label for="recommandation">What are your recommendations</label>
+                        <textarea name="recommandations" id="recommandation"
+                            placeholder="What are your recommendations" style="width: 100%;"></textarea>
                     </div>
                 </div>
-
+               
                 <!-- Buttons -->
                 <div class="buttons">
-                    <button type="button" class="btn" id="prevButton">Previous</button>
-                    <button type="submit" class="btn" id="submitButton">Submit</button>
-                    <button type="button" class="btn" id="nextButton">Next</button>
+                    <button type="submit" class="btn" name="nextButton" id="nextButton">next</button>
+                    <button type="submit" class="btn" name="skipButton" id="skipButton">Skip</button>
+                    <button type="submit" class="btn" name="addmoreButton" id="addmoreButton">Add</button>
+                    <button type="submit" class="btn" name="submitButton" id="submitButton">Show</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<script>
-
-       const form = document.getElementById("auditForm");
-       const pointNumber = document.getElementById("pointNumber");
-       const summarypointNumber=document.getElementById("summarypointNumber");
-       const nextButton = document.getElementById("nextButton");
-       const prevButton = document.getElementById("prevButton");
-       const submitButton = document.getElementById("submitButton");
-       let currentPoint = 1;
-       let totalPoints = 0; 
-       let isFormSubmitted = false;
+<script> 
+    document.addEventListener("DOMContentLoaded", function() {
+        const nextButton = document.getElementById("nextButton");
+        const submitButton = document.getElementById("submitButton");
+        const auditNumberSpan = document.getElementById("auditNumber");
+        const summaryNumberSpan = document.getElementById("summaryNumber");
     
-       function showPoint() {
-        if (currentPoint === 1) {
-            prevButton.style.display = "none";
-        } else {
-            prevButton.style.display = "block";
-        }
+        let currentAuditNumber = 1;
+        let currentSummaryNumber = 1;
+        let isFormSubmitted = false; // Define isFormSubmitted
     
-        pointNumber.textContent = currentPoint;
-        summarypointNumber.textContent=currentPoint;
-    }
+        nextButton.addEventListener("click", () => {
+            currentAuditNumber++;
+            currentSummaryNumber++;
+            auditNumberSpan.textContent = currentAuditNumber;
+            summaryNumberSpan.textContent = currentSummaryNumber;
+        });
     
-    nextButton.addEventListener("click", () => {
-        if (!isFormSubmitted) {
-            currentPoint++;
-            showPoint();
-        }
-    });
+        submitButton.addEventListener("click", () => {
+            if (!isFormSubmitted) {
+                totalPoints = currentPoint; // Make sure totalPoints is defined
+                alert("Form submitted!");
+                isFormSubmitted = true;
+            }
+        });
     
-    prevButton.addEventListener("click", () => {
-        if (!isFormSubmitted && currentPoint > 1) {
-            currentPoint--;
-            showPoint();
-        }
-    });
-    
-    submitButton.addEventListener("click", () => {
-        if (!isFormSubmitted) {
-            totalPoints = currentPoint;
-            showPoint();
-            alert("Form submitted!");
-            isFormSubmitted = true;
-        }
-    });
-
-    const complaintstatuscolor = document.querySelector('input[name="compliance_type"][value="compliant"]');
-    const partialcomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="partially-compliant"]');
-    const nocomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="non-compliant"]');
-    complaintstatuscolor.addEventListener("change",()=>{
-        if(complaintstatuscolor.checked){
-            document.querySelector(".status").style.backgroundColor = "green";
-            
-        }
-    });
-    partialcomplaintstatuscolor.addEventListener("change",()=>{
-        if(partialcomplaintstatuscolor.checked){
-            document.querySelector(".status").style.backgroundColor = "#FFC200";
+        const complaintstatuscolor = document.querySelector('input[name="compliance_type"][value="compliant"]');
+        const partialcomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="partially-compliant"]');
+        const nocomplaintstatuscolor = document.querySelector('input[name="compliance_type"][value="non-compliant"]');
         
-        }
-    });
-    nocomplaintstatuscolor.addEventListener("change",()=>{
-        if(nocomplaintstatuscolor.checked){
-            document.querySelector(".status").style.backgroundColor = "red";
-            
-        }
-    });
-    </script>
+        complaintstatuscolor.addEventListener("change", () => {
+            if (complaintstatuscolor.checked) {
+                document.querySelector(".status").style.backgroundColor = "green";
+            }
+        });
+        
+        partialcomplaintstatuscolor.addEventListener("change", () => {
+            if (partialcomplaintstatuscolor.checked) {
+                document.querySelector(".status").style.backgroundColor = "#FFC200";
+            }
+        });
+        
+        nocomplaintstatuscolor.addEventListener("change", () => {
+            if (nocomplaintstatuscolor.checked) {
+                document.querySelector(".status").style.backgroundColor = "red";
+            }
+        });
     
+        const addmoreButton = document.getElementById("addmoreButton");
+        addmoreButton.addEventListener("click", () => {
+            addAnotherForm();
+        });
+    
+        function addAnotherForm() {
+            const additionalFormPlaceholder = document.getElementById("additionalFormPlaceholder");
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'Add_more.html', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const additionalFormHTML = xhr.responseText;
+                    additionalFormPlaceholder.innerHTML += additionalFormHTML;
+                }
+            };
+            xhr.send();
+        }
+    });
+    
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 {% endblock %}

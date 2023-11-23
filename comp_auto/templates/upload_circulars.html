@@ -1,0 +1,106 @@
+<!-- genreport.html -->
+{% extends "dashboard.html" %}
+{% load static %}
+{% block dashboard_content %}
+<div class="genreport-content">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Upload the Circulars</h5>
+            <form method="post" enctype="multipart/form-data" action="{% url 'file_upload' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div id="fileInputs">
+                <input type="file" name="file">
+                </div>
+                <div class="buttons">
+                    <button type="submit" class="btn" name="AddButton" id="AddButton">Add</button>
+                    <button type="submit" class="btn" name="SubmitButton" id="SubmitButton">Upload</button>
+                </div>
+                
+                
+            </form>
+    </div>
+    
+</div>
+</div>
+<title>PDF Name Prompt</title>
+</div>
+
+<style>
+    .card{
+        margin: 20px;
+        background-color: white;
+        border: 1px solid black;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      
+      .card-body {
+        padding: 20px;
+      }
+      
+      form {
+        margin: 0;
+        padding: 0;
+      }
+      
+      form label{
+        font-weight: bold;
+      }
+      
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      
+      .buttons .btn {
+        flex: 1;
+        max-width:30%;
+        border: 1px solid black;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        padding: 5px;
+        margin:20px;
+    }
+    
+    .buttons .btn:hover {
+        background-color: black;
+        color: white;
+        font-weight: bold;
+        font-size: 18;
+    }
+    
+</style>
+<script>
+  const pdfData= {{ pdf_data|safe }};
+  const pdfBlob=new Blob([pdfData], { type: 'application/pdf' });
+  const pdfUrl=URL.createObjectURL(pdfBlob);
+
+  const pdfName=prompt('Enter PDF Name:');
+
+  if(pdfName){
+    const formData=new FormData();
+    formData.append('pdf_file', pdfBlob, pdfName + '.pdf');
+    fetch('/save_pdf/', {
+      method: 'POST',
+      body: formData,
+  })
+  .then(response => response.json())
+  .then(data => alert(data.message))
+  .catch(error => console.error('Error:', error));
+} else {
+  alert('PDF not saved. Please enter a valid name.');
+}
+</script>
+{% endblock %}

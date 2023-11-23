@@ -3,7 +3,6 @@
 {% block body %}
 <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
 <div class="container">
   
     <div class="col-3">
@@ -12,6 +11,7 @@
         <ul>
           {% comment %} <li><a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li> {% endcomment %}
           <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i>Profile</a></li>
+          <li><a href="{% url 'upload_circulars' %}"><i class="fas fa-file-import"></i> upload Circulars</a></li>
           <li><a href="{% url 'genreport' %}"><i class="fas fa-file-alt"></i> Generate Report</a></li>
           <li><a href="{% url 'myreport' %}"><i class="fas fa-file"></i></i> My reports</a></li>
           <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>

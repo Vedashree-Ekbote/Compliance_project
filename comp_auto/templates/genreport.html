@@ -1,29 +1,42 @@
 <!-- genreport.html -->
 {% extends "dashboard.html" %}
 {% load static %}
-
 {% block dashboard_content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/genreport.css' %}">
 <div class="genreport-content">
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Upload the Circulars</h5>
-            <form method="post" enctype="multipart/form-data"action="{% url 'audit_questions' %}">
+<div class="circular-content">
+  <h3>Circulars </h3>
+  <table>
+      <thead>
+          <tr>
+              <th>Sr. No.</th>
+              <th>Circular Name</th>
+              <th>uploaded At</th>
+          </tr>
+      </thead>
+      <tbody>
+          {%for circular in circulars_instance%}
+          <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><a href="{{ circular.file.url }}" target="_blank">{{ circular.file.name }}</a></td>
+          <td>{{ circular.uploaded_at }}</td>
+          </tr>
+          {%endfor%}
+      </tbody>
+  </table>
+</div>
+         <form method="post" enctype="multipart/form-data"action="{% url 'audit_questions' %}">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <label for="file-0-MAX_NUM_FORMS">Number of Circulars:</label>
-                <input type="number" name="file-0-MAX_NUM_FORMS" value="1" min="1" required>
-                <br>
-                <div id="fileInputs">
-                   {% comment %} dynamic input fields will be there {% endcomment %}
-                </div>
-                <br>
-                <button type="submit" class="btn btn-primary">Upload</button>
-                <button type="submit" class="btn btn-primary">Generate</button>
+                <div class="buttons">
+                  <button type="submit" class="btn" name="GenerateButton" id="GenerateButton">Generate</button>
+              </div>
+  
             </form>
-        </div>
     </div>
-    
-</div>
+
+<title>PDF Name Prompt</title>
 </div>
 
 <style>
@@ -100,7 +113,7 @@
         console.log('Input changed');
         const fileCount = parseInt(this.value);
         const fileInputs = document.getElementById('fileInputs');
-        fileInputs.innerHTML = ''; // Clear previous input fields
+        fileInputs.innerHTML = ''; 
 
         for (let i = 0; i < fileCount; i++) {
             const inputField = document.createElement('input');
@@ -111,5 +124,27 @@
             fileInputs.appendChild(inputField);
         }
     });
+</script>
+
+<script>
+  const pdfData= {{ pdf_data|safe }};
+  const pdfBlob=new Blob([pdfData], { type: 'application/pdf' });
+  const pdfUrl=URL.createObjectURL(pdfBlob);
+
+  const pdfName=prompt('Enter PDF Name:');
+
+  if(pdfName){
+    const formData=new FormData();
+    formData.append('pdf_file', pdfBlob, pdfName + '.pdf');
+    fetch('/save_pdf/', {
+      method: 'POST',
+      body: formData,
+  })
+  .then(response => response.json())
+  .then(data => alert(data.message))
+  .catch(error => console.error('Error:', error));
+} else {
+  alert('PDF not saved. Please enter a valid name.');
+}
 </script>
 {% endblock %}

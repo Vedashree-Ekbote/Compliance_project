@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Response Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    {% comment %} <link rel="stylesheet" href="{% static 'css/results.css' %}"> {% endcomment %}
+</head>
+<style>
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .Audit-points {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        flex-direction:column;
+    }
+    .response , .more_response{
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin: 20px;
+        padding: 20px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        width:500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .response div,.more_response div {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .title, .Summary, .status, .audit_observation, .recommandations {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        flex: 1;
+    }
+    
+    .buttons {
+        text-align: center; 
+        margin-top: 20px;
+    }
+    .buttons .btn {
+        border: 1px solid black;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 10px 20px; 
+    }
+    
+    .buttons .btn:hover {
+        background-color: black;
+        color: white;
+    }
+    
+    label {
+        font-weight: bold;
+    }
+    
+    .compliant{background-color:green;}
+    .partially-compliant{background-color:#FFC200;}
+    .non-compliant{background-color:red;}
+</style>
+<body>
+   
+    <h1>Response Report</h1>
+    <div class="Audit-points">
+        {% for response in user_responses %}
+        <div class="response">
+            <div class="title">
+                <label for="title">Title: </label>Title No.<br>
+            </div>
+
+            <div class="summary">
+                <label for="summary">Summary: </label>Summary No.<br>
+            </div>
+            
+            <div class="status {{ response.compliance_type|lower }}">
+                <label for="Status">Status : </label>{{ response.compliance_type }}<br>
+            </div>
+
+            <div class="audit_observation">
+                <label for="auditobservation">Audit Observations : </label>{{ response.audit_observations }}<br>   
+            </div>
+
+            <div class="recommandations">
+                <label for="recommandation">Recommendations : </label>{{ response.recommandations }}<br>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for more_response in add_more_responses %}
+             
+        <div class="more_response">
+            <div class="title">
+                <label for="title">Title:{{ more_response.title }} </label><br>
+            </div>
+            <div class="Summary">
+                <label for="Summary">Summary: {{ more_response.Summary }}</label><br>
+            </div>
+            
+            <div class="status {{ more_response.compliance_type|lower }}">
+                <label for="Status">Status : </label>{{ more_response.compliance_type }}<br>
+            </div>
+
+            <div class="audit_observation">
+                <label for="auditobservation">Audit Observations : </label>{{ more_response.audit_observations }}<br>   
+            </div>
+
+            <div class="recommandations">
+                <label for="recommandation">Recommendations : </label>{{more_response.recommandations }}<br>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="buttons">
+            <a href="{% url 'report_to_pdf' %}" class="btn" name="DownloadButton" id="DownloadButton">Download Report</a>
+        </div>
+    </div> 
+
+    <h4>Pie Chart</h4>
+    <div style="text-align: center;">
+        <canvas id="complianceChart" width="400" height="400"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% verbatim %}
+    <script>
+        function generatePieChart(compliantCount, partiallyCompliantCount, nonCompliantCount){
+            var ctx=document.getElementById('complianceChart').getContext('2d');
+            new Chart(ctx,{
+                type: 'pie',
+                data: {
+                    labels: ['Compliant', 'Partially Compliant', 'Non-Compliant'],
+                    datasets: [{
+                        data: [compliantCount, partiallyCompliantCount, nonCompliantCount],
+                        backgroundColor: ['green', '#FFC200', 'red']
+                    }]
+                }
+            });
+        }
+        var compliantCount = {{ compliant_count }};
+        var partiallyCompliantCount = {{ partially_compliant_count }};
+        var nonCompliantCount = {{ non_compliant_count }};
+        generatePieChart(compliantCount, partiallyCompliantCount, nonCompliantCount);
+    </script>
+    {% endverbatim %} 
+</body>
+</html>
