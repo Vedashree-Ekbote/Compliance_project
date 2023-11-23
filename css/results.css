@@ -1,0 +1,60 @@
+h1 {
+    text-align: center;
+    margin-top: 20px;
+}
+.Audit-points {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex-direction:column;
+}
+.response , .more_response{
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    width:500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.response div,.more_response div {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.title, .Summary, .status, .audit_observation, .recommandations {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    flex: 1;
+}
+
+.buttons {
+    text-align: center; 
+    margin-top: 20px;
+}
+.buttons .btn {
+    border: 1px solid black;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 10px 20px; 
+}
+
+.buttons .btn:hover {
+    background-color: black;
+    color: white;
+}
+
+label {
+    font-weight: bold;
+}
+
+.compliant{background-color:green;}
+.partially-compliant{background-color:#FFC200;}
+.non-compliant{background-color:red;}
