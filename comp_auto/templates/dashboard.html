@@ -1,8 +1,87 @@
-{% extends "Navbar.html" %}
+{% comment %} {% extends "Navbar.html" %} {% endcomment %}
 {% load static %}
 {% block body %}
 <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+  body{
+    background-image: url("{% static 'images/dashboard_bg.png' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+  }
+  .container {
+    display: flex;
+    height: 88vh;
+    margin-top:30px;
+  }
+  
+  .vertical-navbar{
+    background-color: rgba(51, 51, 51, 0.4); 
+    height: 88vh;
+    width: 30vh;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    position: fixed;
+    left: 0;
+    top:0;
+  }
+  
+  .vertical-navbar ul {
+    list-style-type: none; 
+    padding:0;
+    margin-top:35px;
+  }
+  
+  .vertical-navbar li {
+    margin-bottom: 10px;
+  }
+  
+  div.vertical-navbar ul li a i {
+    margin-right: 5px;
+  }
+  
+  .vertical-navbar a {
+    text-decoration: none;
+    color: #fff;
+    color:white; 
+    font-size: 18px;
+    display: block;
+    padding: 15px 0;
+  }
+  
+  .vertical-navbar a:hover {
+    background-color:white ; 
+    width: 100%;
+    color:rgba(0, 0, 0, 0.6);
+  }
+  
+  .rightcontainer{
+    width:50%;
+    margin-top: 0px;
+    margin-left:300px;
+    position: fixed;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+    .vertical-navbar {
+      width: 100%;
+    }
+    .rightcontainer {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+  
+</style>
 <div class="container">
   
     <div class="col-3">

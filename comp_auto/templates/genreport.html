@@ -4,6 +4,67 @@
 {% block dashboard_content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/genreport.css' %}">
+<style>
+  .buttons .btn {
+    flex: 1;
+    max-width:15%;
+    margin: 10px;
+    border: 1px solid white;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    position: absolute;
+    color:white; 
+    background-color:rgba(51, 51, 51, 0.4); 
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.buttons .btn:hover {
+    background-color: white;
+    color: black; 
+}
+
+h1, h3 {
+    text-align: center;
+    color: white; 
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    padding: 5px;
+}
+
+th, td {
+    border: 1px solid white; 
+    padding: 10px;
+    text-align: center;
+    color: white; 
+}
+
+th {
+    background-color: #333; 
+}
+
+tr:nth-child(even) {
+    background-color: #444; 
+}
+
+a {
+    color: white; 
+    text-decoration: none;
+}
+
+a:hover {
+    color: white; 
+    text-decoration: underline;
+}
+
+</style>
 <div class="genreport-content">
 <div class="circular-content">
   <h3>Circulars </h3>

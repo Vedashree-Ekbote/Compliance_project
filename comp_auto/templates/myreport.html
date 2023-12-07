@@ -3,6 +3,50 @@
 {% load static %}
 {% block dashboard_content %}
 <link rel="stylesheet" href="{% static 'css/myreports.css' %}">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #333; 
+        color: white; 
+    }
+    
+    h1, h3 {
+        text-align: center;
+        color: white;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        color: white; 
+    }
+    
+    th, td {
+        border: 1px solid white; 
+        padding: 10px;
+        text-align: center;
+    }
+    
+    th {
+        background-color: #555; 
+    }
+    
+    tr:nth-child(even) {
+        background-color: #444;
+    }
+    
+    a {
+        color: white;
+        text-decoration: none;
+    }
+    
+    a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+</style>
 <div class="myreport-content">
     <h3>Your Previous Reports </h3>
     <table>
@@ -12,6 +56,7 @@
                 <th>PDF Name</th>
                 <th>Created At</th>
                 <th>Delete</th>
+                <th>Rename</th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +71,12 @@
                     <button type="submit"><i class="fas fa-trash"></i></button>
                   </form>
                 </td>
+                <td>
+                    <form method="post" action="{% url 'rename_report' report.id %}">
+                        {% csrf_token %}
+                        <button type="submit"><i class="fas fa-pencil-alt"></i></button>
+                      </form>
+                    </td>
             </tr>
             {%endfor%}
         </tbody>

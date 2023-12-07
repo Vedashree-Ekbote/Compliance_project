@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserResponse,UploadedFile,AddMoreResponse
+from .models import UserResponse,UploadedFile,AddMoreResponse,Report
 
 class RegistrationForm(forms.Form):
     registrationUsername = forms.CharField(label='Username', widget=forms.TextInput(attrs={'id': 'registrationUsername'}))
@@ -33,3 +33,7 @@ class UploadFileForm(forms.ModelForm):
         model=UploadedFile
         fields=['file']
 
+class RenameReportForm(forms.ModelForm):
+    class Meta:
+        model=Report
+        fields=['pdf_file']

@@ -24,6 +24,7 @@ urlpatterns = [
     path('save_pdf/',views.save_pdf,name='save_pdf'),
     path('upload_circulars/',views.upload_circulars,name='upload_circulars'),
     path('file_upload/',views.file_upload,name='file_upload'),
+    path('rename_report/<int:report_id>/',views.rename_report,name='rename_report'),
     path('delete_report/<int:report_id>/',views.delete_report,name='delete_report'),
     path('logout/', views.logout_view,name='logout'),
 ]

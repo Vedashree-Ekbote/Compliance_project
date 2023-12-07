@@ -3,13 +3,84 @@
 
 {% block dashboard_content %}
 <link rel="stylesheet" href="{% static 'css/auditques.css' %}">
-
+<style>
+    .Audit-points {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    
+    .card {
+        width: 450px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        background-color: rgba(255, 255, 255, 0);
+        padding: 20px;
+        color: white; 
+        border:1px solid white;
+        psition:fixed;
+        top:2;
+    }
+    
+    .point {
+        border: 1px solid white; 
+        margin: 10px 0;
+        padding: 10px;
+    }
+    
+    .title, .summary, .status {
+        border: 1px solid white; 
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 10px;
+        color: white; 
+    }
+    
+    .status label {
+        margin-bottom: 5px;
+    }
+    
+    .audit_observation, .recommandations {
+        margin-top: 10px;
+        color: white; 
+    }
+    
+    .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    
+    .buttons .btn {
+        flex: 1;
+        max-width: 30%;
+        margin: 0 5px;
+        border: 1px solid white; 
+        border-radius: 5px;
+        font-weight: bold;
+        color:white; 
+        background-color:rgba(51, 51, 51, 0.4); 
+    }
+    
+    .buttons .btn:hover {
+        background-color: white; 
+        color: black; 
+        font-weight: bold;
+        font-size: 18;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: white; 
+    }
+    
+</style>
 <div class="Audit-points">
     <div class="card">
         <div class="card-body">
             <form method="post" action="{% url 'responses' %}" id="auditForm">
                 {% csrf_token %}
-        
                 <div class="point">
                     <div class="title" id="auditNumber">
                         <label for="title">Title</label>
@@ -67,7 +138,7 @@
     
         let currentAuditNumber = 1;
         let currentSummaryNumber = 1;
-        let isFormSubmitted = false; // Define isFormSubmitted
+        let isFormSubmitted = false; 
     
         nextButton.addEventListener("click", () => {
             currentAuditNumber++;
@@ -78,7 +149,7 @@
     
         submitButton.addEventListener("click", () => {
             if (!isFormSubmitted) {
-                totalPoints = currentPoint; // Make sure totalPoints is defined
+                totalPoints = currentPoint; 
                 alert("Form submitted!");
                 isFormSubmitted = true;
             }
