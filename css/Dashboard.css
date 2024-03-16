@@ -8,6 +8,10 @@
   height: 88vh;
   width: 30vh;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin:0; 
 }
 
 .vertical-navbar ul {
@@ -32,7 +36,7 @@ div.vertical-navbar ul li a i {
 }
 
 .vertical-navbar a:hover {
-  background-color: white;
+  background-color:rgba(255, 255, 255, 0.2);
   width: 30vh;
   color:rgb(137, 137, 137);
 }
@@ -40,5 +44,18 @@ div.vertical-navbar ul li a i {
 .rightcontainer{
   width:70%;
   margin-top: 18px;
-  margin-left: 209px;
+  margin-left: 100px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .vertical-navbar {
+    width: 100%;
+  }
+  .rightcontainer {
+    width: 100%;
+    margin-left: 0;
+  }
 }
