@@ -4,60 +4,114 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <style>
       body{
-        background-image: url("{% static 'images/home_bg.png' %}");
-        background-size: cover; 
-        background-position: center; 
-        background-repeat: no-repeat; 
         margin: 0;
+        padding: 0;
         font-family: 'Arial', sans-serif;
+        overflow-x: hidden; 
+        background-size: contain;
+        background-color:rgb(0,150,255,0.1);
       }
-      .container{
-        display:flex;
-        height: 88vh;
-        justify-content: center;
+      .Home-container {
+        display: flex;
+        min-height: 100vh;
         align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-image:url("{% static 'images/home_bg.png' %}");
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .container {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    }
+    .card-container{
+        perspective: 1000px;
+        display: flex;
+        align-items: center;
+        width: 100%; 
+        margin: 0 10px;
+        justify-content: space-around;
       }
-      .card-container{
-      perspective: 1000px;
-      justify-content: center; 
-      display:flex;
-      align-items: center;
+    .Auditor{
+         width:100%;
+         padding:160px;
+         display: flex; 
+         justify-content: space-between; 
       }
-      
-      .Auditor{
-         width:50%;
-         padding:20px;
-      }
-    
-      .FormName{
+    .FormName{
         text-align:center;
         font-size: 24px !important;
         margin-bottom: 20px !important;
-        color:#333;
+        color:rgb(0, 150, 255);
       }
-      .card {
+    .form-control {
         width: 100%;
-        position: absolute;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+    .card {
+        width:50vh;
+        position: relative;
         backface-visibility: hidden;
         transition: transform 0.5s;
         display: block;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 8px 0 rgba(0, 150, 255, 0.2);
         padding: 20px;
         margin: 0 auto;
-        background-color: rgba(255, 255, 255, 0);
+        background-color: #fff;
       }
     
-      .card:hover{
+    .card:hover{
         transform: scale(1.02);
-        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-        background-color: rgba(255, 255, 255, 0);
+        box-shadow: 0 8px 16px 0 rgba(0, 150, 255, 0.2);
+        background-color: #fff;
       }
-    
+      .card-body {
+        text-align: center;
+      }
       .registration-card {
         transform: rotateY(0deg);
         display: none;
       }
+
+      .button {
+        width: 200px;
+        padding: 10px;
+        color: white;
+        border: 2px solid rgb(0, 150, 255);
+        border-radius: 5px;
+        background-color: rgb(0, 150, 255);
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s, border 0.3s;
+        font-weight:bold;
+    }
+
+    .button:hover {
+        color:rgb(0, 150, 255);
+        background-color:rgba(255, 255, 255, 0.3);
+        border: 2px solid rgb(0, 150, 255);
+        
+    }
+
+    p a {
+        color: blue;
+        text-decoration: none;
+    }
     
+    p a:hover {
+        text-decoration: underline;
+    }
       .flipped .login-card {
         transform: rotateY(180deg);
         display: none;
@@ -93,7 +147,7 @@
         color: #555;
       }
       .about_container {
-        margin: 50px auto;
+        margin: 80px auto;
         padding: 20px;
         background-color: rgba(255, 255, 255, 0.5);
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -110,27 +164,110 @@
         color:#333;
         text-align: justify;
     }
+    .contact_us{
+      margin: 180px auto;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .info .card {
+      width:63%; 
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin: 0 10px;
+    }
+   
+    .homepage-content {
+      background-color: rgba(255, 255, 255, 0.3); 
+      width: fit-content; 
+      padding: 20px; 
+      margin: 0 auto; 
+      font-weight:bold;
+  }
+  .service_container {
+    margin: 40px auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .service_container h4 {
+    color: #333;
+    text-align: center;
+    font-size: 28px;
+  }
+  
+  .card-container-service {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    align-items: center;
+  }
+  
+  .card-service {
+    width: 22%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 20px; 
+  }
+  
+  .card-service:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  
+  .card-service img {
+    width: 60px;
+    height: auto;
+    margin: 0 auto;
+  }
+  
+  .card-body-service {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .card-text-service {
+    color: #333;
+    margin-bottom: 0;
+  }
+  
+
 </style>
-<div class="container">
+<div class="Home-container">
+  <div class="homepage-content">
+  <h1>Generate Audit Reports with Ease</h1>
+  <p>Introducing an automated and innovative audit reporting system <br>that streamlines the audit process, 
+    ensuring consistent production of best audit reports.<br>The system utilizes algorithms to replace manual labor,
+     providing a standardized, and efficient way of generating audit reports.</p>
+     <button  class="button" onclick="scrollToLoginForm()">Learn More</button>
+</div>
+</div>
+<div class="container" id="login-form"> 
+  {% comment %} <div class="image">
+    <img src="{% static 'images/login_page.png' %}" alt="Audit Image" width="200">
+</div> {% endcomment %}
       <div class="Auditor">
-        <div class="forms-container">
-        <div class="card-container"> <!-- Added a container around the card -->
-            <div class="card login-card"> <!-- Added login-card class -->
+        <div class="card-container"> 
+            <div class="card login-card"> 
                 <div class="card-body">
                     <form method='POST' action="{% url 'login' %}">
                         {% csrf_token %}
                         <h4 class="FormName">Login Form</h4>
                         <div class="mb-3"> 
-                            <i class="input-icon fas fa-user"></i> 
                             <input  placeholder="Enter Username" type="text" class="form-control" id="loginUsername" name="loginUsername">
                         </div>
                         <div class="mb-3">
-                            <i class="input-icon fas fa-lock"></i>
+                           
                             <input placeholder="Enter password" type="password" class="form-control" id="loginPassword" name="loginPassword">
                         </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <p>Don't Have an Account? <a href="#" id="flip-to-register">Register</a></p>
+                        <button type="submit" class="button">Login</button>
                     </form>
-                    <p>Don't Have an Account? <a href="#" id="flip-to-register">Register</a></p>
+                    
                 </div>
             </div>
             <div class="card registration-card"> <!-- Added registration-card class -->
@@ -140,7 +277,6 @@
                         {{form.as_p}}
                         <h4 class="FormName" id="RegistrationForm">Registration Form</h4>
                         <div class="mb-3">
-                            <i class="input-icon fas fa-user"></i> 
                             <input placeholder="Enter Username" type="text" class="form-control" id="registrationUsername"  name="registrationUsername">
                         </div>
                         {% comment %} <div class="mb-3">
@@ -148,36 +284,89 @@
                             <input type="number" class="form-control" id="registrationPhoneNo" name="registrationPhoneNo">
                         </div> {% endcomment %}
                         <div class="mb-3">
-                            <i class="input-icon fas fa-envelope"></i>
+                           
                             <input placeholder="Enter Email" type="email" class="form-control" id="registrationEmail" name="registrationEmail">
                         </div>
                         <div class="mb-3">
-                            <i class="input-icon fas fa-lock"></i>
+                            
                             <input placeholder="Enter Password" type="password" class="form-control" id="registrationPassword" name="registrationPassword">
                         </div>
                         {% comment %} <div class="mb-3">
                           <input placeholder="Confirm Password" type="password" class="form-control" id="ConfirmPassword" name="registrationPasswordConfirm">
                       </div> {% endcomment %}
-                      </div>
-                    
-                        <button type="submit" class="btn btn-primary">Register</button>
-        
+                     
                         <p>Already Have an Account? <a href="#" id="flip-to-login">Login</a></p>
-    
+                        <button type="submit" class="button">Register</button>
                     </form>
                 </div>       
         </div>
             </div>
         </div>
+  
+</div>
+</div>
+<div id="about" class="about_container">
+      <h4>About Us</h4>
+       <p>Introducing an automated and innovative audit reporting system that streamlines the audit process, 
+        ensuring prompt and consistent production of high-quality audit reports. The system utilizes algorithms to replace manual labor, 
+        providing a standardized, efficient, and dependable way of generating audit reports.</p>
+</div>
+<div id="service" class="service_container">
+  
+    <h4>Just Four Steps to Go!!</h4>
+    <div class="card-container-service">
+      <div class="card-service">
+        <img src="{% static 'images/circular_upload.webp' %}" class="card-img-top" alt="Service 1">
+        <div class="card-body-service">
+          <p class="card-text-service">Upload RBI Circulars</p>
+        </div>
+      </div>
+      <div class="card-service">
+        <img src="{% static 'images/summerization.png' %}" class="card-img-top" alt="Service 2">
+        <div class="card-body-service">
+          <p class="card-text-service">Summarize audit points and Provide Inputs</p>
+        </div>
+      </div>
+      <div class="card-service">
+        <img src="{% static 'images/piechart.png' %}" class="card-img-top" alt="Service 3">
+        <div class="card-body-service">
+          <p class="card-text-service">Get visual Reprentation of Complaince status</p>
+        </div>
+      </div>
+      <div class="card-service">
+        <img src="{% static 'images/report.webp' %}" class="card-img-top" alt="Service 4">
+        <div class="card-body-service">
+          <p class="card-text-service">Generate Reports in PDF format</p>
+        </div>
+      </div>
     </div>
   </div>
-</div>
-<div class="about_container">
-      <h4>About Us</h4>
-       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-        cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+  
+<div id="contact" class="contact_us">
+  <div class="forms-container">
+    <div class="card-container"> 
+        <div class="card login-card">
+            <div class="card-body">
+                <form method='POST'>
+                    {% csrf_token %}
+                    <h4 class="FormName">Contact Form</h4>
+                    <div class="mb-3"> 
+                    
+                        <input  placeholder="Enter Username" type="text" class="form-control" id="Username" name="Username">
+                    </div>
+                    <div class="mb-3">
+                      
+                        <input placeholder="Enter email" type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+    
+                      <textarea placeholder="Enter query" type="text" class="form-control" id="query" name="query"></textarea>
+                  </div>
+                    <button type="submit" class="btn btn-primary">submit</button>
+                </form>
+        
+            </div>
+        </div>
 </div>
 <script>
   const fliptologincard = document.getElementById("flip-to-login");
@@ -193,6 +382,11 @@
     cardContainer.classList.remove("flipped");
     cardContainer.classList.add("unflipped");
   });
+
+  function scrollToLoginForm() {
+    var loginForm = document.getElementById('login-form');
+    loginForm.scrollIntoView({ behavior: 'smooth' });
+}
 </script>
-{% include 'footer.html' %}
+
 {% endblock body %}

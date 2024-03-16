@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Count
 from .forms import RegistrationForm, UserResponseForm,UploadFileForm,AnotherUserResponseForm,RenameReportForm
-from .models import UserResponse, Report,UploadedFile,AddMoreResponse
+from .models import UserResponse, Report,UploadedFile,AddMoreResponse,Audit_point_summaries
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.template.loader import get_template
@@ -24,6 +24,11 @@ import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 import pickle,ssl
 import re ,subprocess,sys
+from .circulars_processing import (
+    convert_pdf_to_images,
+    extracted_text_from_img,
+    split_passages,
+)
     
 # Create your views here.
 def index(request):
@@ -72,6 +77,7 @@ def profile(request):
 @login_required(login_url='login')
 def genreport(request):
     circulars_instance=UploadedFile.objects.filter(user=request.user).order_by('-uploaded_at')
+    
     return render(request,'genreport.html',{'circulars_instance':circulars_instance})
 
 @login_required(login_url='login')
@@ -97,59 +103,36 @@ def file_upload(request):
                 uploaded_file.save()
                 messages.success(request, 'File uploaded successfully.')
                 
-                model_path = 'D:\\Vedu study\\TY\\Complaince project\\complaince_proj\\complaince\\model.pkl'
-                model, tokenizer = load_model_and_tokenizer(model_path)
-
-                passage='''Use of Information Technology by banks has grown rapidly and is now an important part of the operational strategy of banks. The
-                           number, frequency and impact of cyber incidents/attacks have
-                            increased manifold in the recent past, more so in the case of
-financial sector including banks. There is an urgent need to put in place a robust cyber security/resilience framework at UCBs to
-ensure adequate security of their assets on a continuous basis. It
-has, therefore, become essential to enhance the security of the
-UCBs from cyber threats by improving the current defenses in
-addressing cyber risks.'''
-
-                summary=summarize(passage, model, tokenizer)
-                print("Generated Summary:\n",summary)
                 # text extraction
-                # circulars_instance = UploadedFile.objects.filter(user=request.user)
-                # extracted_text = ''
+                circulars_instance = UploadedFile.objects.filter(user=request.user).last()
+                pdf_path = circulars_instance.file.path
+                images = convert_pdf_to_images(pdf_path)
 
-                # for uploaded_file in circulars_instance:
-                #     pdf_path = uploaded_file.file.path
-                #     images = convert_pdf_to_images(pdf_path)
-
-                #     for i, image in enumerate(images):
-                #         image_path = f"temp_image_{i}.png"
-                #         image.save(image_path, "PNG")
-                #         text = extracted_text_from_img(image_path)
-                #         extracted_text += f"Page {i + 1}:\n{text}\n{'-' * 40}\n"
+                extracted_text = ''
+                for i, image in enumerate(images):
+                    image_path = f"temp_image_{i}.png"
+                    image.save(image_path, "PNG")
+                    text = extracted_text_from_img(image_path)
+                    extracted_text += f"Page {i + 1}:\n{text}\n{'-' * 40}\n"
                 
-                # text_file_path='C:\Users\Admin\Desktop\ANA Cyber Forensics wrk\complaince_proj\complaince\media\extracted_text.txt'
-                # with open(output_file_path, 'r') as output_file:
-                #     processed_results = output_file.read()     
+                print("Extracted Text:", extracted_text)
 
-                # colab_notebook_path="C:\Users\Admin\Desktop\ANA Cyber Forensics wrk\complaince_proj\complaince\Summeizer.ipynb"    
-                # with open(text_file_path, 'w') as text_file:
-                #      text_file.write(extracted_text)
+                audit_points = split_passages(extracted_text)
+                for i,point in enumerate(audit_points,start=1):
+                    print(f"Point {i}: {point}")
 
-                # output_file_path = 'C:\Users\Admin\Desktop\ANA Cyber Forensics wrk\complaince_proj\complaince\media\output.txt'
-                
-                # Execute the Colab notebook using subprocess
-                # subprocess.run(['jupyter', 'nbconvert', '--execute', '--to', 'notebook', '--output', 'output.ipynb', colab_notebook_path, '--ExecutePreprocessor.allow_errors=True', '--ExecutePreprocessor.timeout=-1'])
+                for i, point in enumerate(audit_points, start=1):
+                    summary = i  
+                    Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)   
+                # model_path = 'D:\\Vedu study\\TY\\Complaince project\\complaince_proj\\complaince\\model.pkl'
+                # model, tokenizer = load_model_and_tokenizer(model_path)
+                # summaries = []
+                # for i, point in enumerate(audit_points):
+                #     summary = summarize(point, model, tokenizer)
+                #     summaries.append(summary)
+                #     setattr(circulars_instance, f'summary_{i + 1}', summary)
 
-                # Read the processed results from the output file
-               
-                # splitting the text into different passages
-                # passage_pattern = re.compile(r'(\d+(\.\d+)?|[IVXLCDM]+)\.\s+(.*)', re.DOTALL)
-                # # passage_pattern = re.compile(r'(\d+\.\d+|\d+\.|[IVXLCDM]+|\s+)(.*?)(?=\n\n(?:\d+\.\d+|\d+\.|[IVXLCDM]+|\s+|$)|\Z)', re.DOTALL)
-                # matches = passage_pattern.findall(extracted_text)
-                # passages = [(match[0].strip(), match[1].strip()) for match in matches if match[1].strip()]
-
-                # for i, passage in enumerate(passages):
-                #     entire_point, text_part = passage
-                #     print(f"Passage {i + 1} - Entire Point:\n{entire_point}")
-                #     print(f"Passage {i + 1} - Text Part:\n{text_part}\n")
+                circulars_instance.save()
 
                 return redirect('genreport')
             else:
@@ -159,29 +142,6 @@ addressing cyber risks.'''
         form = UploadFileForm()
 
     return render(request, 'genreport.html', {'form': form}) 
-
-def summarize(text, model, tokenizer):
-    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
-    summary = summarizer(text, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, early_stopping=True)[0]['summary_text']
-    return summary
-
-def load_model_and_tokenizer(file_path):
-    with open(file_path, 'rb') as model_file:
-         model, tokenizer = pickle.load(model_file)
-    return model, tokenizer
-
-def extracted_text_from_img(image_path):
-    img=None
-    try:
-       img=Image.open(image_path)
-       text=pytesseract.image_to_string(img)
-       return text
-    except Exception as e:
-       print(f"Error extracting text from image: {e}")
-       return ""
-    finally:
-        if img:
-            img.close()
 
 def convert_pdf_to_images(pdf_path):
     try:
@@ -200,41 +160,80 @@ def convert_pdf_to_images(pdf_path):
         if doc:
             doc.close()
 
+def extracted_text_from_img(image_path):
+    img=None
+    try:
+       img=Image.open(image_path)
+       text=pytesseract.image_to_string(img)
+       return text
+    except Exception as e:
+       print(f"Error extracting text from image: {e}")
+       return ""
+    finally:
+        if img:
+            img.close()
+
+def split_passages(text):
+    point_pattern = re.compile(r'\b\d+\.\d*\s+|[IVXLCDMivxlcdm]+\.\d*\s+')
+
+    audit_points = []
+    last_index = 0
+
+    for match in point_pattern.finditer(text):
+        index = match.start()
+        audit_points.append(text[last_index:index].strip())
+        last_index = match.end()
+
+    audit_points.append(text[last_index:].strip())
+
+    return audit_points
+
+def summarize(text, model, tokenizer):
+    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
+    summary = summarizer(text, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, early_stopping=True)[0]['summary_text']
+    return summary
+
+def load_model_and_tokenizer(file_path):
+    with open(file_path, 'rb') as model_file:
+         model, tokenizer = pickle.load(model_file)
+    return model, tokenizer
 
 
 @login_required(login_url='login')
 def responses(request):
-    if request.method=='POST':
-       form=UserResponseForm(request.POST)
-       if 'nextButton' in request.POST:
+    audit_points_summaries = Audit_point_summaries.objects.all()
+    if request.method == 'POST':
+        form = UserResponseForm(request.POST)
+        messages.success(request, 'Your response has been saved.')
+        if 'nextButton' in request.POST:
             if form.is_valid():
-                form.instance.user=request.user
+                form.instance.user = request.user
                 form.save()
-                messages.success(request, 'Your response has been saved.')
                 return redirect('responses')
-            else:
-                return HttpResponse("Invalid Form")
-       elif 'skipButton' in request.POST:
+        elif 'skipButton' in request.POST:
             return redirect('responses')
-       elif 'addmoreButton' in request.POST:
+        elif 'addmoreButton' in request.POST:
             if form.is_valid():
-                form.instance.user=request.user
+                form.instance.user = request.user
                 form.save()
                 messages.success(request, 'Your response has been saved.')
                 return redirect('add_moreques')
             else:
+                print(form.errors) 
                 return HttpResponse("Invalid Form")
-       elif 'submitButton' in request.POST:
+        elif 'submitButton' in request.POST:
             if form.is_valid():
-                form.instance.user=request.user
+                form.instance.user = request.user
                 form.save()
                 messages.success(request, 'Your response has been saved.')
                 return redirect('show_report')
             else:
+                print(form.errors) 
                 return HttpResponse("Invalid Form")
     else:
-        form=UserResponseForm()
-        return render(request,'audit_questionare.html',{'form':form})   
+        form = UserResponseForm()
+
+    return render(request, 'audit_questionare.html', {'form': form, 'audit_points_summaries': audit_points_summaries})
 
 def add_more(request):
     if request.method=='POST':
@@ -346,6 +345,7 @@ def pie_chart(user):
     compliant_count = 0
     partially_compliant_count = 0
     non_compliant_count = 0
+    not_applicable_count= 0
     
     for entry in combined_counts:
         if entry['compliance_type'] == 'compliant':
@@ -354,21 +354,24 @@ def pie_chart(user):
             partially_compliant_count += entry['count']
         elif entry['compliance_type'] == 'non-compliant':
             non_compliant_count += entry['count']
-    total_count = compliant_count + partially_compliant_count + non_compliant_count
+        elif entry['compliance_type'] == 'not-applicable':
+            not_applicable_count += entry['count']
+    total_count = compliant_count + partially_compliant_count + non_compliant_count+not_applicable_count
 
     # Calculate percentages
     compliant_percentage = (compliant_count / total_count) * 100
     partially_compliant_percentage = (partially_compliant_count / total_count) * 100
     non_compliant_percentage = (non_compliant_count / total_count) * 100
+    not_applicable_percentage = (not_applicable_count / total_count) * 100
 
     if total_count == 0:
         print("No data available for pie chart.")
         return None
-    data = [compliant_count, partially_compliant_count, non_compliant_count]
-    labels = [f"Compliant ({compliant_percentage:.2f}%)", f"Partially Compliant ({partially_compliant_percentage:.2f}%)", f"Non-Compliant ({non_compliant_percentage:.2f}%)"]
+    data = [compliant_count, partially_compliant_count, non_compliant_count,not_applicable_count]
+    labels = [f"Compliant ({compliant_percentage:.2f}%)", f"Partially Compliant ({partially_compliant_percentage:.2f}%)", f"Non-Compliant ({non_compliant_percentage:.2f}%)",f"not-applicable ({not_applicable_percentage:.2f}%)"]
 
     # Create pie chart
-    plt.pie(data, labels=labels, colors=['green', '#FFC200', 'red'])
+    plt.pie(data, labels=labels, colors=['green', '#FFC200', 'red','#00C8F0'])
     chart_image_buffer=io.BytesIO()
     plt.savefig(chart_image_buffer, format='png')
     plt.close()
@@ -392,7 +395,9 @@ def upload_circulars(request):
     return render(request,'upload_circulars.html')
 
 def audit_questions(request):
-    return render(request,'audit_questionare.html')
+    audit_points_summaries=Audit_point_summaries.objects.all()
+    return render(request,'audit_questionare.html',{'audit_points_summaries': audit_points_summaries})  
+    
 
 def add_moreques(request):
     return render(request,'Add_more.html')

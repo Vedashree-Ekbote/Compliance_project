@@ -5,7 +5,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <style>
   body{
-    background-image: url("{% static 'images/dashboard_bg.png' %}");
+    {% comment %} background-image: url("{% static 'images/dashboard_bg.png' %}"); {% endcomment %}
+    background-color:rgba(0, 150, 255, 0.1); 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -20,7 +21,7 @@
   }
   
   .vertical-navbar{
-    background-color: rgba(51, 51, 51, 0.4); 
+    background-color: rgba(0, 150, 255, 0.8); 
     height: 88vh;
     width: 30vh;
     padding: 0 10px;
@@ -30,8 +31,9 @@
     position: fixed;
     left: 0;
     top:0;
+    margin-right: 5px;
   }
-  
+
   .vertical-navbar ul {
     list-style-type: none; 
     padding:0;
@@ -46,6 +48,7 @@
     margin-right: 5px;
   }
   
+
   .vertical-navbar a {
     text-decoration: none;
     color: #fff;
@@ -56,16 +59,26 @@
   }
   
   .vertical-navbar a:hover {
-    background-color:white ; 
+    background-color: white;
     width: 100%;
-    color:rgba(0, 0, 0, 0.6);
-  }
+    color: rgb(0,150,255);
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    transform: scale(1.05); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
   
+  .username-container {
+    
+}
+
   .rightcontainer{
     width:50%;
     margin-top: 0px;
     margin-left:300px;
     position: fixed;
+    color:black;
   }
   
   @media (max-width: 768px) {
@@ -95,6 +108,10 @@
           <li><a href="{% url 'myreport' %}"><i class="fas fa-file"></i></i> My reports</a></li>
           <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
         </ul>
+        <p>
+          <i class="fas fa-user" style="margin-top: auto;  margin-right: 5px;"></i>
+          {{ auditor.username }}
+      </p>
       </div>
     </div>
     <div class="rightcontainer">

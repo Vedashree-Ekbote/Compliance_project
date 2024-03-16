@@ -29,14 +29,22 @@
 <style>
   .card {
     margin: 20px;
-    background-color: rgba(51, 51, 51, 0.4); 
     border: 1px solid white; 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: white; 
+    color: black; 
+    transition: transform 0.5s;
+    display: block;
+    box-shadow: 0 4px 8px 0 rgba(0, 150, 255, 0.2);
+    padding: 20px;
+    background-color: #fff;
 }
 
+.card:hover{
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px 0 rgba(0, 150, 255, 0.2);
+    background-color: white;
+}
 .card-body {
-    padding: 20px;
+    text-align: center;
 }
 
 form {
@@ -46,39 +54,37 @@ form {
 
 form label {
     font-weight: bold;
-    color: white; 
+    color:rgb(0,150,255); 
 }
 
 input[type="file"] {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
-    border: 1px solid white; 
+    border: 1px solid rgb(0,150,255); 
     border-radius: 5px;
-    color: #333;
-    background-color: #555; 
+    color:black;  
+    background-color: rgba(0,150,255,0.1); 
 }
 
 .buttons .btn {
     flex: 1;
     max-width: 30%;
-    background-color: rgba(51, 51, 51, 0.4); 
-    border: 1px solid white;
-    border-radius: 5px;
-    font-weight: bold;
     text-align: center;
     cursor: pointer;
     padding: 5px;
     margin: 20px;
     color: white;
-    ont-weight: bold;
+    border: 1px solid rgb(0,150,255);
+    border-radius: 5px;
+    background-color: rgb(0,150,255);
+    transition: background-color 0.3s, color 0.3s, border 0.3s;
     font-size: 18;
 }
 
 .buttons .btn:hover {
     background-color: white;
-    color: black; 
-
+    color: rgb(0,150,255); 
 }
 </style>
 <script>

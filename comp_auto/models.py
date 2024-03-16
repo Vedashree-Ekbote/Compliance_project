@@ -19,6 +19,7 @@ class UserResponse(models.Model):
         ('compliant', 'Compliant'),
         ('partially-compliant', 'Partially Compliant'),
         ('non-compliant', 'Non-Compliant'),
+        ('not-applicable','Not-applicable'),
     )
     
     compliance_type = models.CharField(
@@ -27,7 +28,8 @@ class UserResponse(models.Model):
     )
     audit_observations =models.TextField()
     recommandations=models.TextField()
-
+    
+    # summary = models.TextField(blank=True, null=True,editable=False)
     def __str__(self):
         return f"UserResponse - ID: {self.id}"
     
@@ -43,6 +45,7 @@ class AddMoreResponse(models.Model):
         ('compliant', 'Compliant'),
         ('partially-compliant', 'Partially Compliant'),
         ('non-compliant', 'Non-Compliant'),
+        ('not-applicable','Not-applicable'),
     )
     
     compliance_type = models.CharField(
@@ -73,4 +76,10 @@ class UploadedFile(models.Model):
       def __str__(self):
           return self.file.name
       
-      
+class Audit_point_summaries(models.Model):
+      user=models.ForeignKey(User,on_delete=models.CASCADE,default=1)
+      audit_point_text=models.TextField()
+      summary=models.TextField(max_length=255)
+
+      def __str__(self):
+        return self.audit_point_text
