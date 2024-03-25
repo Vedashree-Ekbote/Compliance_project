@@ -11,10 +11,17 @@ from django.contrib.auth.models import User
 #         return self.user.username
 
 #Model To Store User Responses
+class Audit_point_summaries(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    audit_point_text = models.TextField()
+    summary = models.TextField(max_length=255)
+
+    def __str__(self):
+        return f"Audit Point {self.id}: {self.audit_point_text}"
+    
 class UserResponse(models.Model):
-
     user = models.ForeignKey(User,on_delete=models.CASCADE, default=1)
-
+    audit_point = models.ForeignKey(Audit_point_summaries, on_delete=models.CASCADE, default=1)
     COMPLIANCE_CHOICES = (
         ('compliant', 'Compliant'),
         ('partially-compliant', 'Partially Compliant'),
@@ -76,10 +83,4 @@ class UploadedFile(models.Model):
       def __str__(self):
           return self.file.name
       
-class Audit_point_summaries(models.Model):
-      user=models.ForeignKey(User,on_delete=models.CASCADE,default=1)
-      audit_point_text=models.TextField()
-      summary=models.TextField(max_length=255)
 
-      def __str__(self):
-        return self.audit_point_text

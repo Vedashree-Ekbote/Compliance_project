@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/genreport.css' %}">
 <style>
+  
   .buttons .btn {
     flex: 1;
     max-width:20%;
@@ -86,7 +87,9 @@ a:hover {
       </tbody>
   </table>
 </div>
-         <form method="post" enctype="multipart/form-data"action="{% url 'audit_questions' %}">
+<form method="post" action="{% url 'audit_points' %}">
+  
+{% comment %} <form method="post" enctype="multipart/form-data"action="{% url 'audit_questions' %}"> {% endcomment %}
                 {% csrf_token %}
                 {{ form.as_p }}
                 <div class="buttons">

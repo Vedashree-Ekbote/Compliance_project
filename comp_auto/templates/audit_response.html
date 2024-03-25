@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Responses to Audit Points</title>
+   
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        
+        .Audit-points {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .card {
+            width: 450px;
+            display: block;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            background-color: #fff;
+            padding: 20px;
+            color: black;
+            border-radius: 8px;
+            transition: transform 0.5s;
+        }
+        
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .audit-point {
+            border: 1px solid black;
+            margin: 10px 0;
+            padding: 10px;
+            background-color:#f0f0f0;
+                }
+
+        .status{
+            border:1px solid black;
+            width: calc(100% - 2px);
+        }
+        .audit_observation textarea,
+        .recommandations textarea {
+            width: calc(100% - 10px);
+            height: 100px;
+            resize: vertical;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .buttons .btn {
+            flex: 1;
+            max-width: 20%;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            padding: 5px;
+            margin: 20px;
+            color: black;
+            border: 1px solid black;
+            border-radius: 5px;
+            background-color: white;
+            transition: background-color 0.3s, color 0.3s, border 0.3s;
+            font-size: 18;
+        }
+        
+        .buttons .btn:hover {
+            background-color: black;
+            color: white; 
+        
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="Audit-points">
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+            <div class="audit-point">
+                <h4>{{ current_audit_point.audit_point_text }}</h4>
+            </div>
+            <div class="audit-point">
+                <p>{{ current_audit_point.summary }}</p>
+            </div>
+            <div class="status" id="Status">
+                <label>
+                    <input type="radio" class="compliance_type" name="compliance_type" value="compliant">
+                    Compliant
+                </label>
+                <label>
+                    <input type="radio" class="compliance_type" name="compliance_type" value="partially-compliant">
+                    Partially Compliant
+                </label>
+                <label>
+                    <input type="radio" class="compliance_type" name="compliance_type" value="non-compliant">
+                    Non-Compliant
+                </label>
+                <label>
+                    <input type="radio" class="compliance_type" name="compliance_type" value="not-applicable">
+                    Not-Applicable
+                </label>
+            </div>
+
+            <div class="audit_observation" id="Observation">
+                <textarea name="audit_observations" id="auditobservation" placeholder="Audit Observations"></textarea>
+            </div>
+            
+            <div class="recommandations" id="Recommandation">
+               
+                <textarea name="recommandations" id="recommandation" placeholder="What are your recommendations"></textarea>
+            </div>
+            <div class="buttons">
+            <button type="submit" class="btn" name="nextButton" id="nextButton">Next</button>
+            <button type="submit" class="btn" name="skipButton" id="skipButton">Skip</button>
+            <button type="submit" class="btn" name="addmoreButton" id="addmoreButton">Add</button>
+            <button type="submit" class="btn" name="submitButton" id="submitButton">Show</button>
+            </div>
+        
+        </form>
+        </div>
+
+    </div>
+</body>
+</html>

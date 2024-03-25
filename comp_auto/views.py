@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Count
 from .forms import RegistrationForm, UserResponseForm,UploadFileForm,AnotherUserResponseForm,RenameReportForm
-from .models import UserResponse, Report,UploadedFile,AddMoreResponse,Audit_point_summaries
+from .models import UserResponse, Report,UploadedFile,AddMoreResponse,Audit_point_summaries,Audit_point_summaries
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.template.loader import get_template
@@ -20,9 +20,16 @@ from transformers import pipeline, BartForConditionalGeneration, BartTokenizer
 import pytesseract,fitz
 from urllib3 import PoolManager
 import matplotlib
+from django.urls import reverse
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 import pickle,ssl
+from nltk.tokenize import sent_tokenize
+from nltk.probability import FreqDist
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 import re ,subprocess,sys
 from .circulars_processing import (
     convert_pdf_to_images,
@@ -115,14 +122,14 @@ def file_upload(request):
                     text = extracted_text_from_img(image_path)
                     extracted_text += f"Page {i + 1}:\n{text}\n{'-' * 40}\n"
                 
-                print("Extracted Text:", extracted_text)
+                # print("Extracted Text:", extracted_text)
 
                 audit_points = split_passages(extracted_text)
                 for i,point in enumerate(audit_points,start=1):
                     print(f"Point {i}: {point}")
 
                 for i, point in enumerate(audit_points, start=1):
-                    summary = i  
+                    summary = generate_summary(point) 
                     Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)   
                 # model_path = 'D:\\Vedu study\\TY\\Complaince project\\complaince_proj\\complaince\\model.pkl'
                 # model, tokenizer = load_model_and_tokenizer(model_path)
@@ -188,15 +195,41 @@ def split_passages(text):
 
     return audit_points
 
-def summarize(text, model, tokenizer):
-    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
-    summary = summarizer(text, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, early_stopping=True)[0]['summary_text']
-    return summary
+# def summarize(text, model, tokenizer):
+#     summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
+#     summary = summarizer(text, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, early_stopping=True)[0]['summary_text']
+#     return summary
+
 
 def load_model_and_tokenizer(file_path):
     with open(file_path, 'rb') as model_file:
          model, tokenizer = pickle.load(model_file)
     return model, tokenizer
+
+def generate_summary(text, num_sentences=2):
+    # Tokenize text into sentences
+    sentences = sent_tokenize(text)
+    # Tokenize text into words
+    words = word_tokenize(text)
+    # Remove stopwords
+    stop_words = set(stopwords.words("english"))
+    filtered_words = [word for word in words if word.lower() not in stop_words]
+    # Compute TF-IDF scores
+    tfidf = TfidfVectorizer()
+    tfidf_matrix = tfidf.fit_transform(sentences)
+    tfidf_matrix = tfidf_matrix.toarray()
+
+    # Calculate sentence scores based on TF-IDF
+    sentence_scores = np.sum(tfidf_matrix, axis=1)
+
+    # Select top sentences based on scores
+    top_sentences_indices = sentence_scores.argsort()[-num_sentences:][::-1]
+    top_sentences = [sentences[index] for index in top_sentences_indices]
+
+    # Combine selected sentences to form the summary
+    summary = ' '.join(top_sentences)
+
+    return summary
 
 
 @login_required(login_url='login')
@@ -266,11 +299,13 @@ def show_report(request):
     add_more_responses=AddMoreResponse.objects.filter(user=request.user)
     chart_data=pie_chart(user=request.user)
     context={
-     'user_responses':user_responses,
-     'add_more_responses':add_more_responses,
+    'user_responses':user_responses,
+    #  'add_more_responses':add_more_responses,
      'chart_data': chart_data
     }
-    return render(request,'results.html', context)
+    
+    return render(request, 'thank_you.html', context)
+    
 
 @login_required(login_url='login')
 def myreport(request):
@@ -282,8 +317,9 @@ def PDFView(request):
     Uploaded_File=UploadedFile.objects.filter(user=request.user)
     user_responses = UserResponse.objects.filter(user=request.user)
     add_more_responses=AddMoreResponse.objects.filter(user=request.user)
+    audit_point_summaries=Audit_point_summaries.objects.filter(user=request.user)
     chart_data=pie_chart(user=request)
-    template = get_template('results.html')
+    template = get_template('thank_you.html')
     context = {'user_responses': user_responses,'add_more_responses':add_more_responses,'chart_data':chart_data}
     html = template.render(context)
 
@@ -309,7 +345,7 @@ def PDFView(request):
     Uploaded_File.delete()
     user_responses.delete()
     add_more_responses.delete()
-
+    audit_point_summaries.delete()
     return redirect('myreport')
 
 @login_required(login_url='login')
@@ -401,6 +437,62 @@ def audit_questions(request):
 
 def add_moreques(request):
     return render(request,'Add_more.html')
+
+def audit_points(request):
+    audit_points_summaries = Audit_point_summaries.objects.all()
+    total_audit_points = audit_points_summaries.count()
+    current_index = int(request.GET.get('current_index', 0))
+
+    if request.method == 'POST':
+        form = UserResponseForm(request.POST)
+        if form.is_valid():
+            user_response = form.save(commit=False)
+            user_response.audit_point = audit_points_summaries[current_index]
+            user_response.save()
+            
+            current_index += 1
+            if current_index < total_audit_points:
+                next_url = reverse('audit_points') + f'?current_index={current_index}'
+                return redirect(next_url)
+            else:
+                return redirect('show_report')
+        else:
+            # Form is invalid, render the page with the same audit point
+            current_audit_point = audit_points_summaries[current_index]
+            return render(request, 'audit_response.html', {'current_audit_point': current_audit_point, 'form': form})
+    else:
+        if current_index < total_audit_points:
+            current_audit_point = audit_points_summaries[current_index]
+            form = UserResponseForm()
+        else:
+            return redirect('show_report')  
+    
+        # Define current_audit_point outside the if-else block to handle the case where request method is GET
+        current_audit_point = audit_points_summaries[current_index]
+
+    return render(request, 'audit_response.html', {'current_audit_point': current_audit_point, 'form': form})
+
+# @login_required(login_url='login')
+# def thank_you_page(request):
+#     user_responses = UserResponse.objects.filter(user=request.user)
+#     return render(request, 'thank_you.html', {'user_responses': user_responses})
+    
+def next_audit_point(request):
+    current_index = int(request.POST.get('current_index', 0))
+    audit_points_summaries = Audit_point_summaries.objects.all()
+    total_points = audit_points_summaries.count()
+
+    # If there are more audit points to display, increment the index
+    if current_index < total_points - 1:
+        current_index += 1
+    else:
+        return redirect('summary')  # Redirect to summary page if all points are done
+
+    context = {
+        'audit_points_summaries': audit_points_summaries,
+        'current_index': current_index,
+    }
+    return render(request, 'audit_response.html', context)
 
 @login_required(login_url='login')
 def logout_view(request):

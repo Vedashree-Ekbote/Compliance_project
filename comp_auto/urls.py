@@ -5,7 +5,6 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 
-
 urlpatterns = [
     path("", views.index,name='form'),
     path('register/', views.register,name='register'),
@@ -27,8 +26,12 @@ urlpatterns = [
     path('rename_report/<int:report_id>/',views.rename_report,name='rename_report'),
     path('delete_report/<int:report_id>/',views.delete_report,name='delete_report'),
     path('logout/', views.logout_view,name='logout'),
-]
 
+    #trial paths 
+    path('audit_points/', views.audit_points, name='audit_points'),
+    path('next_audit_point/', views.next_audit_point, name='next_audit_point'),
+    # path('thank_you/', views.thank_you_page, name='thank_you_page'),
+]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

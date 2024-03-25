@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report</title>
+</head>
+<style>
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 36px;
+        color: #333;
+    }
+    .Audit-points {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        flex-direction:column;
+    }
+    .response , .more_response{
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin: 20px;
+        padding: 20px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        width:500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .response div,.more_response div {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .title, .summary, .status, .audit_observation, .recommandations {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid black;
+        border-radius: 2px;
+        flex: 1;
+    }
+    
+    .buttons {
+        text-align: center; 
+        margin-top: 20px;
+    }
+    .buttons .btn {
+        border: 1px solid black;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 10px 20px; 
+        text-decoration: none;
+        
+    }
+    
+    .buttons .btn:hover {
+        background-color: black;
+        color: white;
+    }
+    
+    label {
+        font-weight: bold;
+    }
+    
+    .compliant{background-color:green;}
+    .partially-compliant{background-color:#FFC200;}
+    .non-compliant{background-color:red;}
+    .not-applicable{background-color:#00C8F0;}
+</style>
+<body>
+   <h1>Report</h1>
+    <ul>
+        {% for response in user_responses %}
+        <div class="response">
+            <div class="title">
+                <li>Audit Point: {{ response.audit_point.audit_point_text }}</li>
+            </div>
+
+            <div class="summary">
+                <label for="summary">Summary: </label>{{ response.audit_point.summary }}<br>
+            </div>
+            
+            <div class="status {{ response.compliance_type|lower }}">
+                <label for="Status">Status : </label>{{ response.compliance_type }}<br>
+            </div>
+
+            <div class="audit_observation">
+                <label for="auditobservation">Audit Observations : </label>{{ response.audit_observations }}<br>   
+            </div>
+
+            <div class="recommandations">
+                <label for="recommandation">Recommendations : </label>{{ response.recommandations }}<br>
+            </div>
+        </div>
+        {% endfor %}
+    </ul>
+    <div style="text-align: center;">
+        <h4>Pie Chart</h4>
+        <img src="data:image/png;base64,{{ chart_data }}" alt="Compliance Pie Chart">
+    </div> 
+    <div class="buttons">
+        <a href="{% url 'report_to_pdf' %}" class="btn" name="DownloadButton" id="DownloadButton">Download Report</a>
+    </div>
+</form>
+</body>
+</html>
