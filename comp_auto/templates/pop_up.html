@@ -1,0 +1,23 @@
+<!-- popup_message.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop-up Message</title>
+</head>
+<body>
+    <script>
+        var message = "{{ message }}";
+        if (message) {
+            var result = confirm(message);
+            if (result) {
+                window.location.href = "{% url add_more_url %}";
+            } else {
+                window.location.href = "{% url show_report_url %}";
+            }
+        }
+    </script>
+</body>
+</html>

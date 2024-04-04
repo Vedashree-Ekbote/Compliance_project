@@ -28,6 +28,9 @@ from nltk.tokenize import sent_tokenize
 from nltk.probability import FreqDist
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import re ,subprocess,sys
@@ -99,6 +102,28 @@ def file_upload(request):
                 uploaded_file.user = request.user
                 uploaded_file.save()
                 messages.success(request, 'File uploaded successfully.')
+                circulars_instance = UploadedFile.objects.filter(user=request.user).last()
+                pdf_path = circulars_instance.file.path
+                images = convert_pdf_to_images(pdf_path)
+
+                extracted_text = ''
+                for i, image in enumerate(images):
+                    image_path = f"temp_image_{i}.png"
+                    image.save(image_path, "PNG")
+                    text = extracted_text_from_img(image_path)
+                    extracted_text += f"Page {i + 1}:\n{text}\n{'-' * 40}\n"
+                
+                # print("Extracted Text:", extracted_text)
+
+                audit_points = split_passages(extracted_text)
+                for i,point in enumerate(audit_points,start=1):
+                    print(f"Point {i}: {point}")
+
+                for i, point in enumerate(audit_points, start=1):
+                    summary = generate_summary(point) 
+                    Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)   
+
+                circulars_instance.save()
                 return redirect('upload_circulars')
             else:
                 return HttpResponse("Invalid Form")
@@ -181,15 +206,21 @@ def extracted_text_from_img(image_path):
             img.close()
 
 def split_passages(text):
-    point_pattern = re.compile(r'\b\d+\.\d*\s+|[IVXLCDMivxlcdm]+\.\d*\s+')
-
+    # point_pattern = re.compile(r'\b\d+\.\d*\s+|[IVXLCDMivxlcdm]+\.\d*\s+')
+    # point_pattern = re.compile(r'((?:\d+|[ivxlc]+)\..+?)(?=\s*(?:\b\d+|[ivxlc]+|\(\w+\))\.|$)')
+    # point_pattern = re.compile(r'(?:\d+|((?:\d+\.|\d+\.?\d*|I{1,3}\.?|i{1,3}\.?|V?I{0,3}\.?)\s*.*?)\n(?=\s*(?:\d+\.|\d+\.?\d*|I{1,3}\.?|i{1,3}\.?|V?I{0,3}\.?)|$))')
+    point_pattern = re.compile(r'(\d+\.[\s\S]*?)(?=\n\d+\.|\Z)|\((?:[ivxlc]+)\)\.[\s\S]*?(?=\n\(\w+\)\.|\Z)')
     audit_points = []
     last_index = 0
 
+    # for match in point_pattern.finditer(text):
+    #     index = match.start()
+    #     audit_points.append(text[last_index:index].strip())
+    #     last_index = match.end()
+
     for match in point_pattern.finditer(text):
-        index = match.start()
-        audit_points.append(text[last_index:index].strip())
-        last_index = match.end()
+        audit_point = match.group(0).strip()
+        audit_points.append(audit_point)
 
     audit_points.append(text[last_index:].strip())
 
@@ -209,11 +240,20 @@ def load_model_and_tokenizer(file_path):
 def generate_summary(text, num_sentences=2):
     # Tokenize text into sentences
     sentences = sent_tokenize(text)
-    # Tokenize text into words
-    words = word_tokenize(text)
-    # Remove stopwords
+    
+    # Check if the text contains enough meaningful content
+    if len(sentences) < num_sentences:
+        return "Insufficient content for summary generation."
+    
+    # Tokenize text into words and remove stopwords
     stop_words = set(stopwords.words("english"))
-    filtered_words = [word for word in words if word.lower() not in stop_words]
+    words = word_tokenize(text.lower())
+    filtered_words = [word for word in words if word.isalnum() and word not in stop_words]
+    
+    # Check if there are enough meaningful words after stop word removal
+    if len(filtered_words) < 5:  # Adjust threshold as needed
+        return "Insufficient content for summary generation."
+    
     # Compute TF-IDF scores
     tfidf = TfidfVectorizer()
     tfidf_matrix = tfidf.fit_transform(sentences)
@@ -229,44 +269,32 @@ def generate_summary(text, num_sentences=2):
     # Combine selected sentences to form the summary
     summary = ' '.join(top_sentences)
 
-    return summary
+    return summary 
+# def generate_summary(text, num_sentences=2):
+#     # Tokenize text into sentences
+#     sentences = sent_tokenize(text)
+#     # Tokenize text into words
+#     words = word_tokenize(text)
+#     # Remove stopwords
+#     stop_words = set(stopwords.words("english"))
+#     filtered_words = [word for word in words if word.lower() not in stop_words]
+#     # Compute TF-IDF scores
+#     tfidf = TfidfVectorizer()
+#     tfidf_matrix = tfidf.fit_transform(sentences)
+#     tfidf_matrix = tfidf_matrix.toarray()
 
+#     # Calculate sentence scores based on TF-IDF
+#     sentence_scores = np.sum(tfidf_matrix, axis=1)
 
-@login_required(login_url='login')
-def responses(request):
-    audit_points_summaries = Audit_point_summaries.objects.all()
-    if request.method == 'POST':
-        form = UserResponseForm(request.POST)
-        messages.success(request, 'Your response has been saved.')
-        if 'nextButton' in request.POST:
-            if form.is_valid():
-                form.instance.user = request.user
-                form.save()
-                return redirect('responses')
-        elif 'skipButton' in request.POST:
-            return redirect('responses')
-        elif 'addmoreButton' in request.POST:
-            if form.is_valid():
-                form.instance.user = request.user
-                form.save()
-                messages.success(request, 'Your response has been saved.')
-                return redirect('add_moreques')
-            else:
-                print(form.errors) 
-                return HttpResponse("Invalid Form")
-        elif 'submitButton' in request.POST:
-            if form.is_valid():
-                form.instance.user = request.user
-                form.save()
-                messages.success(request, 'Your response has been saved.')
-                return redirect('show_report')
-            else:
-                print(form.errors) 
-                return HttpResponse("Invalid Form")
-    else:
-        form = UserResponseForm()
+#     # Select top sentences based on scores
+#     top_sentences_indices = sentence_scores.argsort()[-num_sentences:][::-1]
+#     top_sentences = [sentences[index] for index in top_sentences_indices]
 
-    return render(request, 'audit_questionare.html', {'form': form, 'audit_points_summaries': audit_points_summaries})
+#     # Combine selected sentences to form the summary
+#     summary = ' '.join(top_sentences)
+
+#     return summary
+
 
 def add_more(request):
     if request.method=='POST':
@@ -292,7 +320,6 @@ def add_more(request):
         form=AnotherUserResponseForm()
     return render(request,'Add_more.html',{'form':form})    
 
-
 @login_required(login_url='login')
 def show_report(request):
     user_responses = UserResponse.objects.filter(user=request.user)
@@ -300,13 +327,12 @@ def show_report(request):
     chart_data=pie_chart(user=request.user)
     context={
     'user_responses':user_responses,
-    #  'add_more_responses':add_more_responses,
+    'add_more_responses':add_more_responses,
      'chart_data': chart_data
     }
     
     return render(request, 'thank_you.html', context)
     
-
 @login_required(login_url='login')
 def myreport(request):
     user_reports=Report.objects.filter(user=request.user).order_by('-created_at')
@@ -326,10 +352,8 @@ def PDFView(request):
     pdf_buffer = BytesIO()
 
     status = pisa.CreatePDF(html, pdf_buffer)
-
     if status.err:
         return HttpResponse('Error during PDF generation.')
-
     # Save the generated PDF content to the Reports model
     report = Report.objects.create(user=request.user)
 
@@ -358,16 +382,20 @@ def delete_report(request,report_id):
         return JsonResponse({'message': 'Invalid Request'})
 
 @login_required(login_url='login')
-def rename_report(request,report_id):
-    report=Report.objects.get(pk=report_id)
+def rename_report(request, report_id):
+    report = Report.objects.get(pk=report_id)
+    
     if request.method == 'POST':
         form = RenameReportForm(request.POST, instance=report)
         if form.is_valid():
-            form.save()
+            # Save the new report name from the form
+            report.new_report_name = form.cleaned_data['new_report_name']
+            report.save()
             messages.success(request, 'Report renamed successfully.')
             return redirect('myreport')
     else:
         form = RenameReportForm(instance=report)
+        
     return render(request, 'myreport.html', {'form': form, 'report': report})
     
 def pie_chart(user):
@@ -434,32 +462,62 @@ def audit_questions(request):
     audit_points_summaries=Audit_point_summaries.objects.all()
     return render(request,'audit_questionare.html',{'audit_points_summaries': audit_points_summaries})  
     
-
 def add_moreques(request):
     return render(request,'Add_more.html')
 
+@login_required(login_url='login')
 def audit_points(request):
     audit_points_summaries = Audit_point_summaries.objects.all()
     total_audit_points = audit_points_summaries.count()
     current_index = int(request.GET.get('current_index', 0))
-
+    
     if request.method == 'POST':
-        form = UserResponseForm(request.POST)
-        if form.is_valid():
-            user_response = form.save(commit=False)
-            user_response.audit_point = audit_points_summaries[current_index]
-            user_response.save()
-            
+        # form = UserResponseForm(request.POST)
+        if 'skipButton' in request.POST:
+            # If Skip button is clicked, move to the next audit point without saving any response
             current_index += 1
             if current_index < total_audit_points:
                 next_url = reverse('audit_points') + f'?current_index={current_index}'
                 return redirect(next_url)
             else:
                 return redirect('show_report')
+        elif 'addmoreButton' in request.POST:
+               user_response_form = UserResponseForm(request.POST)
+               if user_response_form.is_valid():
+                  user_response = user_response_form.save(commit=False)
+                  user_response.audit_point = audit_points_summaries[current_index]
+                  user_response.user = request.user
+                  user_response.save()
+                  messages.success(request, 'Your response has been saved.')
+                # Redirect to a view where you open the add more response form
+                  return redirect('add_moreques')
+        elif 'submitButton' in request.POST:
+            # If Show button is clicked, redirect to the show report page
+            return redirect('show_report')
         else:
-            # Form is invalid, render the page with the same audit point
-            current_audit_point = audit_points_summaries[current_index]
-            return render(request, 'audit_response.html', {'current_audit_point': current_audit_point, 'form': form})
+            # Next button is clicked, process the form submission
+            form = UserResponseForm(request.POST)
+            if form.is_valid():
+                user_response = form.save(commit=False)
+                user_response.audit_point = audit_points_summaries[current_index]
+                user_response.save()
+                
+                current_index += 1
+                if current_index < total_audit_points:
+                    next_url = reverse('audit_points') + f'?current_index={current_index}'
+                    return redirect(next_url)
+                else:
+                    message = "All audit points are complete. Do you want to add more?"
+                    context = {
+                        'message': message,
+                        'add_more_url': 'add_moreques',
+                        'show_report_url': 'show_report'
+                    }
+                    return render(request, 'pop_up.html', context)
+            else:
+                # Form is invalid, render the page with the same audit point
+                current_audit_point = audit_points_summaries[current_index]
+                return render(request, 'audit_response.html', {'current_audit_point': current_audit_point, 'form': form})
     else:
         if current_index < total_audit_points:
             current_audit_point = audit_points_summaries[current_index]
@@ -467,16 +525,8 @@ def audit_points(request):
         else:
             return redirect('show_report')  
     
-        # Define current_audit_point outside the if-else block to handle the case where request method is GET
-        current_audit_point = audit_points_summaries[current_index]
-
     return render(request, 'audit_response.html', {'current_audit_point': current_audit_point, 'form': form})
 
-# @login_required(login_url='login')
-# def thank_you_page(request):
-#     user_responses = UserResponse.objects.filter(user=request.user)
-#     return render(request, 'thank_you.html', {'user_responses': user_responses})
-    
 def next_audit_point(request):
     current_index = int(request.POST.get('current_index', 0))
     audit_points_summaries = Audit_point_summaries.objects.all()

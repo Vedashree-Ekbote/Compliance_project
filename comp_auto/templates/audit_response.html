@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Responses to Audit Points</title>
+    <title>Report</title>
+</head>
    
     <style>
         body {
@@ -11,42 +12,45 @@
             margin: 0;
             padding: 0;
             background-color: #f2f2f2;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
         
         .Audit-points {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            overflow-y: auto;
+            max-width: 1500px;
         }
         
         .card {
-            width: 450px;
-            display: block;
+            width: 90%;
+            max-width: 1500px;
+            margin: 20px;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
             background-color: #fff;
             padding: 20px;
             color: black;
             border-radius: 8px;
             transition: transform 0.5s;
-        }
-        
-        .card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+            overflow-y: auto; 
         }
         
         .audit-point {
             border: 1px solid black;
             margin: 10px 0;
             padding: 10px;
-            background-color:#f0f0f0;
-                }
-
-        .status{
-            border:1px solid black;
+            background-color: #f0f0f0;
+            
+        }
+        
+        .status {
+            border: 1px solid black;
             width: calc(100% - 2px);
         }
+        
         .audit_observation textarea,
         .recommandations textarea {
             width: calc(100% - 10px);
@@ -55,43 +59,58 @@
             padding: 5px;
             margin-top: 5px;
             margin-bottom: 10px;
+            box-sizing: border-box;
         }
         
         .buttons {
             display: flex;
+            {% comment %} flex-wrap: wrap; /* Allow buttons to wrap to a new line if necessary */ {% endcomment %}
             justify-content: space-between;
             margin-top: 20px;
         }
         
         .buttons .btn {
-            flex: 1;
-            max-width: 20%;
+            flex: 1 1 45%; 
+            max-width: 85%; /* Limit maximum width of buttons */
             font-weight: bold;
             text-align: center;
             cursor: pointer;
             padding: 5px;
-            margin: 20px;
+            margin: 5px; /* Adjust margin for better spacing */
             color: black;
             border: 1px solid black;
             border-radius: 5px;
             background-color: white;
             transition: background-color 0.3s, color 0.3s, border 0.3s;
-            font-size: 18;
+            font-size: 18px;
         }
         
         .buttons .btn:hover {
             background-color: black;
-            color: white; 
-        
+            color: white;
         }
+        
         label {
             display: block;
             margin-bottom: 5px;
         }
         
     </style>
-</head>
 <body>
+<script>
+    // Function to show the pop-up message
+    function showPopup(message) {
+        var result = confirm(message);
+        if (result) {
+            // Redirect to the "Add More" page
+            window.location.href = "{% url 'add_more' %}";
+        } else {
+            // Redirect to the "Show Report" page
+            window.location.href = "{% url 'show_report' %}";
+        }
+    }
+</script>
+
     <div class="Audit-points">
         <div class="card">
             <form method="post">
@@ -141,5 +160,14 @@
         </div>
 
     </div>
+    <script>
+        // Check if the message indicates all points are over
+        var message = "{{ message }}";
+        if (message) {
+            // Show pop-up message
+            showPopup(message);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>
 </html>

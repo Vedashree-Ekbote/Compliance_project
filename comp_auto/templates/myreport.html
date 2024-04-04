@@ -1,4 +1,3 @@
-
 {% extends "dashboard.html" %}
 {% load static %}
 {% block dashboard_content %}
@@ -7,7 +6,7 @@
     body {
         font-family: Arial, sans-serif;
         margin: 20px;
-        background-color:rgba(0,150,255,0.1); 
+        background-color: rgba(0, 150, 255, 0.1); 
         color: white; 
     }
     
@@ -30,8 +29,8 @@
     }
     
    th {
-    background-color:gray;
-    color:white;
+    background-color: gray;
+    color: white;
     } 
     
     tr:nth-child(even) {
@@ -48,11 +47,10 @@
     a:hover {
         color: black;
         text-decoration: underline;
-        
     }
 </style>
 <div class="myreport-content">
-    <h3>Your Previous Reports </h3>
+    <h3>Your Previous Reports</h3>
     <table>
         <thead>
             <tr>
@@ -60,29 +58,32 @@
                 <th>PDF Name</th>
                 <th>Created At</th>
                 <th>Delete</th>
-                <th>Rename</th>
+                {% comment %} <th>Rename</th> {% endcomment %}
             </tr>
         </thead>
         <tbody>
-            {%for report in user_reports%}
+            {% for report in user_reports %}
             <tr>
-            <td>{{ forloop.counter }}</td>
-            <td><a href="{{ report.pdf_file.url }}" target="_blank">{{ report.pdf_file.name }}</a></td>
-            <td>{{ report.created_at }}</td>
-            <td>
-                <form method="post" action="{% url 'delete_report' report.id %}">
-                    {% csrf_token %}
-                    <button type="submit"><i class="fas fa-trash"></i></button>
-                  </form>
-                </td>
+                <td>{{ forloop.counter }}</td>
                 <td>
+                    <a href="{{ report.pdf_file.url }}" target="_blank">{{ report.pdf_file.name }} {{ report.new_report_name }}</a>
+                </td>
+                <td>{{ report.created_at }}</td>
+                <td>
+                    <form method="post" action="{% url 'delete_report' report.id %}">
+                        {% csrf_token %}
+                        <button type="submit"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+                {% comment %} <td>
                     <form method="post" action="{% url 'rename_report' report.id %}">
                         {% csrf_token %}
+                        <input type="text" name="new_report_name" placeholder="Enter new name" required>
                         <button type="submit"><i class="fas fa-pencil-alt"></i></button>
-                      </form>
-                    </td>
+                    </form>
+                </td> {% endcomment %}
             </tr>
-            {%endfor%}
+            {% endfor %}
         </tbody>
     </table>
 </div>

@@ -12,50 +12,56 @@
         font-size: 36px;
         color: #333;
     }
-    .Audit-points {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        flex-direction:column;
-    }
-    .response , .more_response{
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 10px;
+    .report-card {
+        
         margin: 20px;
         padding: 20px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-        width:500px;
+        width: 700px;
         margin-left: auto;
         margin-right: auto;
+        width:700px;
     }
     
-    .response div,.more_response div {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
+    .report-card table {
+        width: 100%;
+        border-collapse: collapse;
     }
     
-    .title, .summary, .status, .audit_observation, .recommandations {
-        margin-bottom: 10px;
+    .report-card th,
+    .report-card td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    .report-card th {
+        background-color: #f2f2f2;
+    }
+    
+    .report-card th,
+    .report-card td {
         padding: 10px;
-        border: 1px solid black;
-        border-radius: 2px;
-        flex: 1;
     }
+    
+    .report-card .compliant { background-color: green; }
+    .report-card .partially-compliant { background-color: #FFC200; }
+    .report-card .non-compliant { background-color: red; }
+    .report-card .not-applicable { background-color: #00C8F0; }
     
     .buttons {
-        text-align: center; 
+        text-align: center;
         margin-top: 20px;
     }
+    
     .buttons .btn {
         border: 1px solid black;
         border-radius: 5px;
         font-weight: bold;
-        padding: 10px 20px; 
+        padding: 10px 20px;
         text-decoration: none;
-        
+        background-color: #fff; /* Set background color */
+        color: #000; /* Set text color */
+        transition: background-color 0.3s, color 0.3s; /* Add transition effect */
     }
     
     .buttons .btn:hover {
@@ -63,42 +69,70 @@
         color: white;
     }
     
-    label {
-        font-weight: bold;
-    }
     
-    .compliant{background-color:green;}
-    .partially-compliant{background-color:#FFC200;}
-    .non-compliant{background-color:red;}
-    .not-applicable{background-color:#00C8F0;}
 </style>
 <body>
    <h1>Report</h1>
     <ul>
-        {% for response in user_responses %}
-        <div class="response">
-            <div class="title">
-                <li>Audit Point: {{ response.audit_point.audit_point_text }}</li>
+        <div class="report-table">
+            {% for response in user_responses %}
+            <div class="report-card">
+                <table>
+                 
+                    <tr>
+                        <th>Audit Point</th>
+                        <td>{{ response.audit_point.audit_point_text }}</td>
+                    </tr>
+                    <tr>
+                        <th>Point Summary</th>
+                        <td>{{ response.audit_point.summary }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td class="{{ response.compliance_type|lower }}">{{ response.compliance_type }}</td>
+                    </tr>
+                    <tr>
+                        <th>Audit Observations</th>
+                        <td>{{ response.audit_observations }}</td>
+                    </tr>
+                    <tr>
+                        <th>Recommendations</th>
+                        <td>{{ response.recommandations }}</td>
+                    </tr>
+                </table>
             </div>
-
-            <div class="summary">
-                <label for="summary">Summary: </label>{{ response.audit_point.summary }}<br>
-            </div>
-            
-            <div class="status {{ response.compliance_type|lower }}">
-                <label for="Status">Status : </label>{{ response.compliance_type }}<br>
-            </div>
-
-            <div class="audit_observation">
-                <label for="auditobservation">Audit Observations : </label>{{ response.audit_observations }}<br>   
-            </div>
-
-            <div class="recommandations">
-                <label for="recommandation">Recommendations : </label>{{ response.recommandations }}<br>
-            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="report-table">
+        {% for more_response in add_more_responses %}
+        <div class="report-card">
+            <table>
+                <tr>
+                    <th>Title</th>
+                    <td>{{ more_response.title }}</td>
+                </tr>
+                <tr>
+                    <th>Summary</th>
+                    <td>{{ more_response.Summary }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td class="{{ more_response.compliance_type|lower }}">{{ more_response.compliance_type }}</td>
+                </tr>
+                <tr>
+                    <th>Audit Observations</th>
+                    <td>{{ more_response.audit_observations }}</td>
+                </tr>
+                <tr>
+                    <th>Recommendations</th>
+                    <td>{{ more_response.recommandations}}</td>
+                </tr>
+            </table>
         </div>
         {% endfor %}
-    </ul>
+    </div>
+    
     <div style="text-align: center;">
         <h4>Pie Chart</h4>
         <img src="data:image/png;base64,{{ chart_data }}" alt="Compliance Pie Chart">

@@ -34,6 +34,8 @@ class UploadFileForm(forms.ModelForm):
         fields=['file']
 
 class RenameReportForm(forms.ModelForm):
+    new_report_name = forms.CharField(max_length=100, label='New Report Name')
+
     class Meta:
-        model=Report
-        fields=['pdf_file']
+        model = Report
+        fields = ['pdf_file', 'new_report_name']
