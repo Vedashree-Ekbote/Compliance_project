@@ -49,6 +49,15 @@ def dashboard(request):
     auditor_instance = request.user
     return render(request, 'dashboard.html', {'auditor': auditor_instance})
 
+# @login_required(login_url='login')
+def admin_dashboard(request):
+    if request.user.is_superuser:
+        # Perform admin-specific actions or fetch admin-specific data here
+        return render(request, 'admin_dashboard.html', {'admin': request.user})
+    else:
+        # Redirect non-admin users to a different page or display an error message
+        return HttpResponse("You are not authorized to access this page.")
+
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -56,8 +65,6 @@ def register(request):
             username = form.cleaned_data['registrationUsername']
             email = form.cleaned_data['registrationEmail']
             password = form.cleaned_data['registrationPassword']
-            # confpassword=form.cleaned_data['registrationPasswordConfirm']
-            # Create the user with the provided information   
             new_user = User.objects.create_user(username=username, email=email, password=password)
         return redirect('form')
 
@@ -79,10 +86,40 @@ def login_view(request):
             return redirect('login')
     return redirect('dashboard')
 
+def admin_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('adminUsername')
+        password = request.POST.get('adminPassword')
+        # Authenticate the user against the user database
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_superuser:
+            # Check if the authenticated user is a superuser
+            login(request, user)
+            return redirect('admin_dashboard')  # Redirect to admin dashboard or any admin-specific page
+        else:
+            return HttpResponse("Invalid username or password.")
+    else:
+        # Render the admin login page template
+        return render(request, 'Home.html')
+    
+def add_user(request):
+    return redirect('register')
+
 @login_required(login_url='login')
 def profile(request):
     auditor_instance = request.user
     return render(request,'profile.html',{'auditor': auditor_instance})
+
+# @login_required(login_url='login')
+def manage_users(request):
+    # Get all users from the database
+    users = User.objects.all()
+    return render(request, 'manage_users.html', {'users': users})
+
+# @login_required(login_url='login')
+def manage_reports(request):
+    reports=Report.objects.all()
+    return render(request, 'manage_reports.html', {'reports': reports})
 
 @login_required(login_url='login')
 def genreport(request):

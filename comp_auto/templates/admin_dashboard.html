@@ -1,0 +1,128 @@
+{% comment %} {% extends "Navbar.html" %} {% endcomment %}
+{% load static %}
+{% block body %}
+<link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+  body{
+    {% comment %} background-image: url("{% static 'images/dashboard_bg.png' %}"); {% endcomment %}
+    background-color:rgba(0, 150, 255, 0.1); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+  }
+  .container {
+    display: flex;
+    height: 88vh;
+    margin-top:30px;
+  }
+  
+  .vertical-navbar{
+    background-color: rgba(0, 150, 255, 0.8); 
+    height: 88vh;
+    width: 30vh;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    position: fixed;
+    left: 0;
+    top:0;
+    margin-right: 5px;
+  }
+
+  .vertical-navbar ul {
+    list-style-type: none; 
+    padding:0;
+    margin-top:35px;
+  }
+  
+  .vertical-navbar li {
+    margin-bottom: 10px;
+  }
+  
+  div.vertical-navbar ul li a i {
+    margin-right: 5px;
+  }
+  
+
+  .vertical-navbar a {
+    text-decoration: none;
+    color: #fff;
+    color:white; 
+    font-size: 18px;
+    display: block;
+    padding: 15px 0;
+  }
+  
+  .vertical-navbar a:hover {
+    background-color: white;
+    width: 100%;
+    color: rgb(0,150,255);
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    transform: scale(1.05); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+  
+  .username-container {
+    
+}
+
+  .rightcontainer{
+    width:50%;
+    margin-top: 0px;
+    margin-left:300px;
+    position: fixed;
+    color:black;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+    .vertical-navbar {
+      width: 100%;
+    }
+    .rightcontainer {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+  
+</style>
+<div class="container">
+  
+    <div class="col-3">
+      <!-- Vertical Navbar -->
+      <div class="vertical-navbar">
+        <ul>
+          {% comment %} <li><a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li> {% endcomment %}
+          <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i>Profile</a></li>
+          <li><a href="{% url 'manage_users' %}"><i class="fas fa-user"></i>Manage users</a></li>
+          <li><a href="{% url 'manage_reports' %}"><i class="fas fa-user"></i>Manage Reports</a></li>
+          {% comment %} <li><a href="{% url 'upload_circulars' %}"><i class="fas fa-file-import"></i> upload Circulars</a></li>
+          <li><a href="{% url 'genreport' %}"><i class="fas fa-file-alt"></i> Generate Report</a></li>
+          <li><a href="{% url 'myreport' %}"><i class="fas fa-file"></i></i> My reports</a></li> {% endcomment %}
+          <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="rightcontainer">
+    <div class="col-9">
+      <!-- Content Container -->
+      <div class="Auditor">
+        <!-- Add a block to display dynamic content -->
+        {% block dashboard_content %}
+        {% endblock %}
+      </div>
+    </div>
+  
+  </div>
+</div>
+
+{% endblock body %}

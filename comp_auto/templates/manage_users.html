@@ -1,0 +1,97 @@
+{% extends "admin_dashboard.html" %}
+{% load static %}
+{% block dashboard_content %}
+<style>
+    /* CSS styles */
+    .manage-users-container {
+        margin: 20px auto;
+        max-width: 800px;
+    }    
+    .add-user-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: black;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    
+    .add-user-button:hover {
+        background-color: #0056b3;
+    }
+    
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border: 2px solid #007bff; /* Add border to the table */
+    }
+    
+    .user-table th, .user-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        color:black;
+    }
+    
+    .user-table th {
+        background-color: #007bff; /* Blue background for headings */
+        color: #fff; /* White text color for headings */
+    }
+    
+    .user-table th:first-child,
+    .user-table td:first-child {
+        border-left: 2px solid #ddd; /* Add left border for first column */
+    }
+    
+    .user-table th:last-child,
+    .user-table td:last-child {
+        border-right: 2px solid black; 
+    }
+    
+    .user-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    
+    .user-table tr:hover {
+        background-color: #ddd;
+    }
+    
+</style>
+
+<div class="add-user-container">
+    <a href="{% url 'register' %}" class="add-user-button" style="color: white;"><i class="fas fa-user-plus"></i></a>
+</div>
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Action</th> <!-- New column for action (delete user) -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td><button onclick="confirmDelete('{{ user.username }}')" class="user-button"><i class="fas fa-trash"style="color: #007bff;"></i></button></td> 
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    function confirmDelete(username) {
+        // Prompt admin for OTP and validate before proceeding with deletion
+        var otp = prompt("You need Permission To delete user. Enter OTP " + username + "':");
+        // Send OTP for validation (implement this logic)
+        // If OTP is valid, proceed with deletion
+        if (otp) {
+            // Redirect to delete user URL with username and OTP
+            {% comment %} window.location.href = "{% url 'delete_user' %}?username=" + username + "&otp=" + otp; {% endcomment %}
+        }
+    }
+</script>
+{% endblock %}
+
+
