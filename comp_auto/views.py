@@ -16,7 +16,8 @@ from django.views.decorators.http import require_GET
 import matplotlib.pyplot as plt,os,io,base64,xhtml2pdf.pisa as pisa
 from PIL import Image
 from pdf2image import convert_from_path
-from transformers import pipeline, BartForConditionalGeneration, BartTokenizer
+# from transformers import pipeline, BartForConditionalGeneration, BartTokenizer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import pytesseract,fitz
 from urllib3 import PoolManager
 import matplotlib
@@ -34,12 +35,9 @@ nltk.download('stopwords')
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import re ,subprocess,sys
-from .circulars_processing import (
-    convert_pdf_to_images,
-    extracted_text_from_img,
-    split_passages,
-)
-    
+
+tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-xsum-12-6")
+model = AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-xsum-12-6")
 # Create your views here.
 def index(request):
     return render(request, 'Home.html')
@@ -186,13 +184,14 @@ def file_upload(request):
                 
                 # print("Extracted Text:", extracted_text)
 
-                audit_points = split_passages(extracted_text)
-                for i,point in enumerate(audit_points,start=1):
-                    print(f"Point {i}: {point}")
+                    audit_points = split_passages(extracted_text)
+                    for i,point in enumerate(audit_points,start=1):
+                        print(f"Point {i}: {point}")
 
-                for i, point in enumerate(audit_points, start=1):
-                    summary = generate_summary(point) 
-                    Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)   
+                    for i, point in enumerate(audit_points, start=1):
+                        summary = generate_summary(point) 
+                        Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)  
+                 
                 # model_path = 'D:\\Vedu study\\TY\\Complaince project\\complaince_proj\\complaince\\model.pkl'
                 # model, tokenizer = load_model_and_tokenizer(model_path)
                 # summaries = []
@@ -246,6 +245,7 @@ def split_passages(text):
     # point_pattern = re.compile(r'\b\d+\.\d*\s+|[IVXLCDMivxlcdm]+\.\d*\s+')
     # point_pattern = re.compile(r'((?:\d+|[ivxlc]+)\..+?)(?=\s*(?:\b\d+|[ivxlc]+|\(\w+\))\.|$)')
     # point_pattern = re.compile(r'(?:\d+|((?:\d+\.|\d+\.?\d*|I{1,3}\.?|i{1,3}\.?|V?I{0,3}\.?)\s*.*?)\n(?=\s*(?:\d+\.|\d+\.?\d*|I{1,3}\.?|i{1,3}\.?|V?I{0,3}\.?)|$))')
+    # point_pattern=re.compile(r'((?:(?:[IVXLCDM]+\.\s)|(?:\d+\.\s)).+?)(?=\n(?:[IVXLCDM]+\.\s|\d+\.\s)|\Z)')
     point_pattern = re.compile(r'(\d+\.[\s\S]*?)(?=\n\d+\.|\Z)|\((?:[ivxlc]+)\)\.[\s\S]*?(?=\n\(\w+\)\.|\Z)')
     audit_points = []
     last_index = 0
@@ -341,7 +341,7 @@ def add_more(request):
               form.instance.user=request.user
               form.save()
               messages.success(request, 'Your response has been saved.')
-              return redirect('add_moreques')
+              return redirect('add_more')
            else:
               print(form.errors) 
               return HttpResponse("Invalid Form")
@@ -360,15 +360,71 @@ def add_more(request):
 @login_required(login_url='login')
 def show_report(request):
     user_responses = UserResponse.objects.filter(user=request.user)
-    add_more_responses=AddMoreResponse.objects.filter(user=request.user)
-    chart_data=pie_chart(user=request.user)
-    context={
-    'user_responses':user_responses,
-    'add_more_responses':add_more_responses,
-     'chart_data': chart_data
+    add_more_responses = AddMoreResponse.objects.filter(user=request.user)
+    chart_data = pie_chart(user=request.user)
+    # executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
+    executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
+    context = {
+        'user_responses': user_responses,
+        'add_more_responses': add_more_responses,
+        'chart_data': chart_data,
+        'executive_summary': executive_summary,
     }
     
     return render(request, 'thank_you.html', context)
+
+def executive_summary_recommendations(user_responses, add_more_responses):
+    all_recommendations_text = ''
+    
+    # Collect recommendations from UserResponse model
+    for response in user_responses:
+        if response.recommandations:
+            all_recommendations_text += response.recommandations + ' '
+
+    # Collect recommendations from AddMoreResponse model
+    for response in add_more_responses:
+        if response.recommandations:
+            all_recommendations_text += response.recommandations + ' '
+
+    # Tokenize text into sentences
+    sentences = sent_tokenize(all_recommendations_text)
+
+    # Choose a fixed number of sentences for summary
+    num_sentences_summary = 2
+    summary_sentences = sentences[:num_sentences_summary]
+
+    # Combine summary sentences into a single string
+    executive_summary = ' '.join(summary_sentences)
+
+    return executive_summary
+
+def generate_executive_summary(user_responses, add_more_responses, tokenizer, model):
+    all_recommendations_text = ''
+    
+    # Collect recommendations from UserResponse model
+    for response in user_responses:
+        if response.recommandations:
+            all_recommendations_text += response.recommandations + ' '
+
+    # Collect recommendations from AddMoreResponse model
+    for response in add_more_responses:
+        if response.recommandations:
+            all_recommendations_text += response.recommandations + ' '
+    
+    # Prefix the input text with "summarize:" for abstractive summarization
+    input_text = "summarize: " + all_recommendations_text
+    
+    # Tokenize the input text
+    input_ids = tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True)
+    
+    # Generate the summary
+    summary_ids = model.generate(input_ids, max_length=150, min_length=50, num_beams=4, early_stopping=True)
+    
+    # Decode the summary from token IDs to human-readable text
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    
+    return summary
+
     
 @login_required(login_url='login')
 def myreport(request):
@@ -382,8 +438,10 @@ def PDFView(request):
     add_more_responses=AddMoreResponse.objects.filter(user=request.user)
     audit_point_summaries=Audit_point_summaries.objects.filter(user=request.user)
     chart_data=pie_chart(user=request)
+    # executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
+    executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
     template = get_template('thank_you.html')
-    context = {'user_responses': user_responses,'add_more_responses':add_more_responses,'chart_data':chart_data}
+    context = {'user_responses': user_responses,'add_more_responses':add_more_responses,'chart_data':chart_data,'executive_summary': executive_summary,}
     html = template.render(context)
 
     pdf_buffer = BytesIO()

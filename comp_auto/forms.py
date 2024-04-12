@@ -39,3 +39,6 @@ class RenameReportForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['pdf_file', 'new_report_name']
+
+
+
