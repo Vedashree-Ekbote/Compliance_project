@@ -18,6 +18,7 @@ from PIL import Image
 from pdf2image import convert_from_path
 # from transformers import pipeline, BartForConditionalGeneration, BartTokenizer
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+# from transformers import T5ForConditionalGeneration, T5Tokenizer
 import pytesseract,fitz
 from urllib3 import PoolManager
 import matplotlib
@@ -32,12 +33,18 @@ from nltk.corpus import stopwords
 import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
+from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import re ,subprocess,sys
+import spacy
 
-tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-xsum-12-6")
-model = AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-xsum-12-6")
+# model = T5ForConditionalGeneration.from_pretrained("t5-small")
+# tokenizer = T5Tokenizer.from_pretrained("t5-small")
+
+# tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-xsum-12-6")
+# model = AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-xsum-12-6")
+
 # Create your views here.
 def index(request):
     return render(request, 'Home.html')
@@ -151,8 +158,10 @@ def file_upload(request):
                 # print("Extracted Text:", extracted_text)
 
                 audit_points = split_passages(extracted_text)
+                
                 for i,point in enumerate(audit_points,start=1):
                     print(f"Point {i}: {point}")
+                    title=generate_title(point)
 
                 for i, point in enumerate(audit_points, start=1):
                     summary = generate_summary(point) 
@@ -182,17 +191,26 @@ def file_upload(request):
                     text = extracted_text_from_img(image_path)
                     extracted_text += f"Page {i + 1}:\n{text}\n{'-' * 40}\n"
                 
-                # print("Extracted Text:", extracted_text)
+                    print("Extracted Text:", extracted_text)
 
-                    audit_points = split_passages(extracted_text)
-                    for i,point in enumerate(audit_points,start=1):
-                        print(f"Point {i}: {point}")
+                    # audit_points = split_passages(extracted_text)
+                    audit_points = split_points_with_regex(extracted_text)
+                    for i, (point, content) in enumerate(audit_points.items(), start=1):
+                        print(f"{i}. Point {point}: {content.strip()}")
+                        title=extract_title(content)
+                        summary = generate_summary(content)  
+                        Audit_point_summaries.objects.create(user=request.user, audit_point_text=title,summary=summary)
+                    # for i,point in enumerate(audit_points,start=1):
+                    #     print(f"Point {i}: {point}")
+                    #     title = "" 
+                    #     title=extract_title(point)
 
-                    for i, point in enumerate(audit_points, start=1):
-                        summary = generate_summary(point) 
-                        Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)  
+                    # for i, point in enumerate(audit_points, start=1):
+                    #     summary = generate_summary(point) 
+                    #     Audit_point_summaries.objects.create(user=request.user, audit_point_text=point, summary=summary)  
                  
-                # model_path = 'D:\\Vedu study\\TY\\Complaince project\\complaince_proj\\complaince\\model.pkl'
+                
+                # model_path = 'D:\Vedu study\TY\Complaince project\complaince_proj\complaince\model_and_tokenizer.pkl'
                 # model, tokenizer = load_model_and_tokenizer(model_path)
                 # summaries = []
                 # for i, point in enumerate(audit_points):
@@ -241,6 +259,68 @@ def extracted_text_from_img(image_path):
         if img:
             img.close()
 
+# def split_points_with_regex(text):
+#     extracted_points = {}
+#     current_point = None
+
+#     # Regex pattern to match numbered points
+#     pattern_numbered = r'\b\d+(\.\d+)?\s*'
+
+#     # Iterate through each line in the text
+#     for line in text.split('\n'):
+#         # Check if the line starts with a numbered point
+#         match_numbered = re.match(pattern_numbered, line)
+#         if match_numbered:
+#             # Extract the numbered point
+#             current_point = match_numbered.group().strip()
+#             extracted_points[current_point] = line[len(current_point):].strip()
+#         elif line.startswith('('):
+#             # If the line starts with parentheses, treat it as a separate point
+#             current_point = line.split(':', 1)[0].strip()
+#             extracted_points[current_point] = line[len(current_point):].strip()
+#         elif current_point:
+#             # If no match found and current_point is set, append line to the current point's text
+#             extracted_points[current_point] += ' ' + line.strip()
+
+#     return extracted_points
+
+def split_points_with_regex(text):
+    extracted_points = {}
+    current_point = None
+
+    # Regex pattern to match numbered points
+    pattern_numbered = r'\b\d+(\.\d+)?\s*'
+
+    # Split the text at double newline characters to handle passages
+    paragraphs = text.strip().split('\n\n')
+
+    # Iterate through each paragraph in the text
+    for paragraph in paragraphs:
+        lines = paragraph.split('\n')
+        # Iterate through each line in the paragraph
+        for line in lines:
+            # Check if the line starts with a numbered point
+            match_numbered = re.match(pattern_numbered, line)
+            if match_numbered:
+                # Extract the numbered point
+                current_point = match_numbered.group().strip()
+                extracted_points[current_point] = line[len(current_point):].strip()
+            elif line.startswith('('):
+                # If the line starts with parentheses, treat it as a separate point
+                current_point = line.split(':', 1)[0].strip()
+                extracted_points[current_point] = line[len(current_point):].strip()
+            elif current_point:
+                # If no match found and current_point is set, append line to the current point's text
+                extracted_points[current_point] += ' ' + line.strip()
+            else:
+                # If no current point identified, treat the line as a new point
+                current_point = "Unindexed"
+                if current_point not in extracted_points:
+                    extracted_points[current_point] = ""
+                extracted_points[current_point] += ' ' + line.strip()
+
+    return extracted_points
+
 def split_passages(text):
     # point_pattern = re.compile(r'\b\d+\.\d*\s+|[IVXLCDMivxlcdm]+\.\d*\s+')
     # point_pattern = re.compile(r'((?:\d+|[ivxlc]+)\..+?)(?=\s*(?:\b\d+|[ivxlc]+|\(\w+\))\.|$)')
@@ -263,16 +343,53 @@ def split_passages(text):
 
     return audit_points
 
-# def summarize(text, model, tokenizer):
-#     summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
-#     summary = summarizer(text, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, early_stopping=True)[0]['summary_text']
+# def summarize(text, model, tokenizer, num_sentences=2):
+#     input_ids = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
+    
+#     # Generate the summary
+#     summary_ids = model.generate(input_ids, max_length=150, min_length=50, num_beams=4, early_stopping=True)
+    
+#     # Decode the summary from token IDs to human-readable text
+#     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    
 #     return summary
 
+def generate_title(passage):
+    sentences = sent_tokenize(passage)
+    words = [word_tokenize(sentence) for sentence in sentences]
+    words_flat = [word for sublist in words for word in sublist]
+    word_counts = Counter(words_flat)
+    most_common_words = word_counts.most_common(5)
+    title = ' '.join(word for word, _ in most_common_words)
+    return title
 
+nlp = spacy.load("en_core_web_sm")
+
+def extract_title(passage):
+    # Process the passage using spaCy
+    doc = nlp(passage)
+
+    # Extract the first sentence
+    first_sentence = next(doc.sents, None)
+    
+    if first_sentence:
+        # Extract keywords (nouns and adjectives) from the first sentence
+        keywords = [token.text for token in first_sentence if token.pos_ in ['NOUN', 'PROPN', 'ADJ']]
+        
+        # Construct title from keywords
+        if keywords:
+            title = " ".join(keywords)
+        else:
+            title = "Untitled"
+    else:
+        title = "Untitled"
+    
+    return title
+    
 def load_model_and_tokenizer(file_path):
     with open(file_path, 'rb') as model_file:
          model, tokenizer = pickle.load(model_file)
-    return model, tokenizer
+    return model, tokenizer  
 
 def generate_summary(text, num_sentences=2):
     # Tokenize text into sentences
@@ -362,8 +479,8 @@ def show_report(request):
     user_responses = UserResponse.objects.filter(user=request.user)
     add_more_responses = AddMoreResponse.objects.filter(user=request.user)
     chart_data = pie_chart(user=request.user)
-    # executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
-    executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
+    executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
+    # executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
     context = {
         'user_responses': user_responses,
         'add_more_responses': add_more_responses,
@@ -373,21 +490,31 @@ def show_report(request):
     
     return render(request, 'thank_you.html', context)
 
-def executive_summary_recommendations(user_responses, add_more_responses):
+def executive_summary_recommendations(user_responses, add_more_responses):  #extravtive summary
     all_recommendations_text = ''
+    all_observations_text=''
     
     # Collect recommendations from UserResponse model
+    for response in user_responses:
+        if response.audit_observations:
+            all_observations_text += response.audit_observations + ' '
+
     for response in user_responses:
         if response.recommandations:
             all_recommendations_text += response.recommandations + ' '
 
     # Collect recommendations from AddMoreResponse model
     for response in add_more_responses:
+        if response.audit_observations:
+            all_observations_text += response.audit_observations + ' '
+    
+    for response in add_more_responses:
         if response.recommandations:
             all_recommendations_text += response.recommandations + ' '
+    
 
     # Tokenize text into sentences
-    sentences = sent_tokenize(all_recommendations_text)
+    sentences = sent_tokenize(all_recommendations_text+all_observations_text)
 
     # Choose a fixed number of sentences for summary
     num_sentences_summary = 2
@@ -398,21 +525,28 @@ def executive_summary_recommendations(user_responses, add_more_responses):
 
     return executive_summary
 
-def generate_executive_summary(user_responses, add_more_responses, tokenizer, model):
+def generate_executive_summary(user_responses, add_more_responses, tokenizer, model): #Abstravive way of summary
     all_recommendations_text = ''
+    all_observations_text=''
     
-    # Collect recommendations from UserResponse model
+    for response in user_responses:
+        if response.audit_observations:
+            all_observations_text += response.audit_observations + ' '
+
     for response in user_responses:
         if response.recommandations:
             all_recommendations_text += response.recommandations + ' '
+    
+    for response in add_more_responses:
+        if response.audit_observations:
+            all_observations_text += response.audit_observations + ' '
 
-    # Collect recommendations from AddMoreResponse model
     for response in add_more_responses:
         if response.recommandations:
             all_recommendations_text += response.recommandations + ' '
     
     # Prefix the input text with "summarize:" for abstractive summarization
-    input_text = "summarize: " + all_recommendations_text
+    input_text = "summarize: " + all_recommendations_text+all_observations_text
     
     # Tokenize the input text
     input_ids = tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True)
@@ -438,8 +572,8 @@ def PDFView(request):
     add_more_responses=AddMoreResponse.objects.filter(user=request.user)
     audit_point_summaries=Audit_point_summaries.objects.filter(user=request.user)
     chart_data=pie_chart(user=request)
-    # executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
-    executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
+    executive_summary = executive_summary_recommendations(user_responses, add_more_responses)
+    # executive_summary=generate_executive_summary(user_responses, add_more_responses,tokenizer, model)
     template = get_template('thank_you.html')
     context = {'user_responses': user_responses,'add_more_responses':add_more_responses,'chart_data':chart_data,'executive_summary': executive_summary,}
     html = template.render(context)
